@@ -37,7 +37,6 @@ import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayInputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -74,7 +73,8 @@ public final class BugReportDialog
 	implements ActionListener,
 			   KeyListener
 {
-
+	private static final long serialVersionUID = 1L;
+	
 	private static Object[] items = {"Bug Report", "Feature Request"};
 	private JTextField nameText = new JTextField();
 	private JTextField emailText = new JTextField();
@@ -85,7 +85,6 @@ public final class BugReportDialog
 	private JButton cancelButton = new JButton("Cancel");
 	private Container contentPane = null;
 	private JPanel buttonPanel = new JPanel();
-	private Frame parentFrame = null;
 	private boolean hasBeenEdited = false;
 	
 	
@@ -93,8 +92,6 @@ public final class BugReportDialog
 	{
 		
 		super(parent, "Bug Report/Feature Request", true);
-		
-		parentFrame = parent;
 		
 		GridBagLayout gb = new GridBagLayout();
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -235,12 +232,12 @@ public final class BugReportDialog
 		pack();
 	}
 	
-	private boolean hasBeenEdited()
+	protected boolean hasBeenEdited()
 	{
 		return hasBeenEdited;
 	}
 	
-	private void hasBeenEdited(boolean value)
+	protected void hasBeenEdited(boolean value)
 	{
 		hasBeenEdited = value;
 	}
@@ -251,7 +248,7 @@ public final class BugReportDialog
 		reportText.setText("");
 	}
 	
-	private String formatFormFields(String name, String value, String boundary) 
+	protected String formatFormFields(String name, String value, String boundary) 
 	{
 		String result = "";
 		try {
@@ -297,7 +294,6 @@ public final class BugReportDialog
 						
 						BufferedImage bufImg = robot.createScreenCapture(gc.getBounds());
 						ByteArrayOutputStream bo = new ByteArrayOutputStream();
-						ByteArrayInputStream bi = null;
 						
 						JPEGCodec.createJPEGEncoder(bo).encode(bufImg);
 						mimeEnc.appendPart("imageSize", String.valueOf(bo.size()), "form-data");

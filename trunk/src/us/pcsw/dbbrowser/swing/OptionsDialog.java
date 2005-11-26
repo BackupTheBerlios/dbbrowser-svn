@@ -33,14 +33,12 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -100,7 +98,8 @@ public final class OptionsDialog
 				java.awt.event.MouseListener,
 				javax.swing.event.ChangeListener
 {
-	private JFormattedTextField cachePageSizeTextField = null;
+	private static final long serialVersionUID = 1L;
+	
 	private JButton closeButton = null;
 	private Font resFont = null;
 	private Font sqlFont = null;
@@ -113,7 +112,6 @@ public final class OptionsDialog
 	private JButton sqlFontButton = null;
 	private JTextField sqlFontTextArea = null;
 	private JCheckBox ignoreSelCheckBox = null;
-	private JCheckBox loadCacheCheckBox = null;
 	private JCheckBox saveSecretCheckBox = null;
 	private JTextField repForNullTextField = null;
 	private JFormattedTextField tabSizeTextField = null;
@@ -221,34 +219,6 @@ public final class OptionsDialog
     	}
     }
 
-    private void cplFileButton_ActionEvent(ActionEvent event)
-    {
-	    // Get the path/name of the file to save the file to.
-	    JFileChooser fileChooser = new JFileChooser();
-	    fileChooser.setApproveButtonText("Save");
-	    fileChooser.setApproveButtonMnemonic('S');
-	    fileChooser.setDialogTitle("Connection Provider List Config File");
-	    fileChooser.setFileHidingEnabled(false);
-	    fileChooser.setMultiSelectionEnabled(false);
-//	    fileChooser.setSelectedFile(new File(cplFileTextField.getText()));
-	    File f = null;
-	    while (f == null) {
-		    int response = fileChooser.showOpenDialog(this);
-		    if (response == JFileChooser.CANCEL_OPTION) {
-		    	return;
-		    }
-	    	f = fileChooser.getSelectedFile();
-	    	if (! f.exists()) {
-				JOptionPane.showMessageDialog(this, "The file " +
-											  f.getAbsolutePath() +
-											  " does not exist.",
-											  "Invalid Filename",
-											  JOptionPane.ERROR_MESSAGE);
-		    	f = null;
-	    	}
-	    }
-    }
-
 	private void editConnectionProviderListItem()
 		throws CloneNotSupportedException
 	{
@@ -299,9 +269,6 @@ public final class OptionsDialog
 		GridBagLayout gridBag = new GridBagLayout();
 		JLabel label = null;
 		JPanel panel = new JPanel(gridBag);
-		RegExpFormatter ref = null;
-
-		
 
 		// SEPARATOR PANEL
 		JPanel sepPanel = new JPanel();

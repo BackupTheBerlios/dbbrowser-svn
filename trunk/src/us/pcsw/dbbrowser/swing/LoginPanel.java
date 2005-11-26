@@ -114,12 +114,11 @@ final class LoginPanel
 	extends JPanel
 	implements ActionListener, ListSelectionListener
 {
+	private static final long serialVersionUID = 1L;
+
 	public static int ACTION_EVENT_CANCEL = 0;
 	public static int ACTION_EVENT_SELECTION = 1;
 	
-	private static int WIDTH = 380;
-	private static int HEIGHT = 200;
-
 	private JButton cancelButton = null;
     private boolean cancelled = false;
     private JFileChooser fileChooser = null;
@@ -283,9 +282,9 @@ final class LoginPanel
 			// enumeration. 
 			Vector clone = (Vector)listeners.clone();
 			ActionListener listener;
-			Enumeration enum = clone.elements();
-			while (enum.hasMoreElements()) {
-				listener = (ActionListener)enum.nextElement();
+			Enumeration e = clone.elements();
+			while (e.hasMoreElements()) {
+				listener = (ActionListener)e.nextElement();
 				listener.actionPerformed(ae);
 			}
 		}
@@ -596,9 +595,9 @@ final class LoginPanel
 		
 		this.provider = cp;
 		Component[] components = parmsPanel.getComponents();
-		Enumeration enum = cp.getConnectionParameters();
-		while (enum.hasMoreElements()) {
-			cParm = (ConnectionParameter)enum.nextElement();
+		Enumeration e = cp.getConnectionParameters();
+		while (e.hasMoreElements()) {
+			cParm = (ConnectionParameter)e.nextElement();
 			value = cParm.getValue();
 			for (i = 0; i < components.length; i++) {
 				if (cParm.getName().equals(components[i].getName())) {

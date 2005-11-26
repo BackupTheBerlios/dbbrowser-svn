@@ -47,7 +47,6 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
-import us.pcsw.dbbrowser.ConnectionProviderModel;
 import us.pcsw.dbbrowser.Preferences;
 import us.pcsw.dbbrowser.cp.ConnectionProvider;
 import us.pcsw.dbbrowser.event.StatusEvent;
@@ -141,19 +140,15 @@ public class MainFrame
     		    javax.swing.event.ChangeListener,
 			    us.pcsw.dbbrowser.event.StatusListener
 {
+	private static final long serialVersionUID = 1L;
 	
 	private static String MAX_NINE_CONNECTIONS_WARNING = "<html><b>Currently, a maximum of only 9 connections are supported.<b><br><font size=\"-1\">Closing some open connections and try again.</font></html>";
-
-    /**
-     * The connection provider list.
-     */
-    private ConnectionProviderModel cpm = null;
     
     /**
      * Database view frame.
      */
     private DBViewDialog dbvDialog = null;
-
+    
     // Gui Elements
     // Menus
     private JMenu connection;
@@ -168,13 +163,8 @@ public class MainFrame
 	//private JCheckBoxMenuItem fileViewDBObjects;
     private JMenu edit;
     private JMenuItem
-		editCopy,
-		editCut,
 		editPreferences,
-		editPaste,
-		editRedo,
-		editReplace,
-		editUndo;
+		editReplace;
     private JMenu stmt;
     private JMenuItem
     	stmtExec,
@@ -221,7 +211,6 @@ public class MainFrame
     public MainFrame()
     {
 		super();
-		this.cpm = Preferences.getConnectionProviderModel();
 		
 		// Set the icon of the frame
 //		ImageIcon icon = new ImageIcon(getClass().getResource
@@ -408,7 +397,6 @@ public class MainFrame
      */
     private void cloneConnection()
     {
-    	int i = conTab.getTabCount() + 1;
     	ConnectionPanel cp = getSelectedConnectionPanel();
 	   	if (cp == null) {
 			JOptionPane.showMessageDialog
@@ -654,7 +642,7 @@ public class MainFrame
 			editPreferences.addActionListener(this);
 			edit.add(editPreferences);
 		} else {
-			DBBrowserAppListener dbbal = new DBBrowserAppListener(this);
+			new DBBrowserAppListener(this);
 		}
 		// End Added
 		
@@ -1263,10 +1251,8 @@ public class MainFrame
 				// Add additional ConnectionProviders for any other panels.
 				// If the ConnectionProvider is already represented in the
 				// dialog, it will be ignored in the dbvDialog's add method.
-				int j = 0;
 				int m = conTab.getTabCount();
 				for (int i = 0; i < m; i++) {
-					j = i + 1;
 					cPanel = (ConnectionPanel)conTab.getComponentAt(i);
 					dbvDialog.add(cPanel.getConnectionProvider());
 				}	

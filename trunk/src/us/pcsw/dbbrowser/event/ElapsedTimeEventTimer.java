@@ -90,7 +90,6 @@ public class ElapsedTimeEventTimer extends TimerTask
 			// listener adds or removes itself while we are iterating through the
 			// enumeration. 
 			Vector clone = (Vector)statusListeners.clone();
-			StatusListener listener;
 			return clone.elements();
 		} else {
 			return null;
@@ -103,12 +102,12 @@ public class ElapsedTimeEventTimer extends TimerTask
 	public void run()
 	{
 		StatusListener listener = null;
-		Enumeration enum = getNotifyListeners();
-		if (enum != null) {
+		Enumeration e = getNotifyListeners();
+		if (e != null) {
 			Long elapsedTime = new Long(new Date().getTime() - startTime.getTime());
 			StatusEvent se = new StatusEvent(this, StatusTypeEnum.TIME_ELAPSED, elapsedTime);
-			while (enum.hasMoreElements()) {
-				listener = (StatusListener)enum.nextElement();
+			while (e.hasMoreElements()) {
+				listener = (StatusListener)e.nextElement();
 				listener.statusChanged(se);
 			}
 		}

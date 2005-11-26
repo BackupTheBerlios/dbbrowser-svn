@@ -131,9 +131,9 @@ public abstract class ConnectionProvider
 		}
 		// Copy the parameters for the connection.
 		ConnectionParameter cParm = null;
-		Enumeration enum = getConnectionParameters();
-		while (enum.hasMoreElements()) {
-			cParm = (ConnectionParameter)enum.nextElement();
+		Enumeration e = getConnectionParameters();
+		while (e.hasMoreElements()) {
+			cParm = (ConnectionParameter)e.nextElement();
 			newCP.getConnectionParameter(cParm.getName()).setValue(cParm.getValue());
 		}
 		// Return the result
@@ -382,9 +382,9 @@ public abstract class ConnectionProvider
 			int i = 0;
 			int itmCnt = nl.getLength();
 
-			Enumeration enum = cp.getConnectionParameters();
-			while (enum.hasMoreElements()) {
-				ConnectionParameter param = (ConnectionParameter)enum.nextElement();
+			Enumeration e = cp.getConnectionParameters();
+			while (e.hasMoreElements()) {
+				ConnectionParameter param = (ConnectionParameter)e.nextElement();
 				for (i = 0; i < itmCnt; i++) {
 					elem = (Element)nl.item(i);
 					map = elem.getAttributes();
@@ -462,9 +462,9 @@ public abstract class ConnectionProvider
 		
 		// Parameters
 		ConnectionParameter cp = null;
-		Enumeration enum = getConnectionParameters();
-		while (enum.hasMoreElements()) {
-			cp = (ConnectionParameter)enum.nextElement();
+		Enumeration e = getConnectionParameters();
+		while (e.hasMoreElements()) {
+			cp = (ConnectionParameter)e.nextElement();
 			elem = doc.createElement(ELEM_PARAM);
 			elem.setAttribute(ATTR_NAME, cp.getName());
 			if (cp instanceof PicklistConnectionParameter) {

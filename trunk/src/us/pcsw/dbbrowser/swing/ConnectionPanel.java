@@ -44,13 +44,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.Enumeration;
 import java.util.Timer;
 import java.util.Vector;
-import javax.swing.Action;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -83,7 +80,6 @@ import us.pcsw.dbbrowser.event.StatusEvent;
 import us.pcsw.dbbrowser.event.StatusListener;
 import us.pcsw.dbbrowser.event.StatusTypeEnum;
 import us.pcsw.util.Debug;
-import us.pcsw.util.StringUtil;
 import us.pcsw.util.tablemodelexport.TableModelExport;
 import us.pcsw.swing.BasicFileFilter;
 import us.pcsw.swing.SearchAndReplaceDialog;
@@ -220,7 +216,7 @@ public class ConnectionPanel
 	            javax.swing.event.CaretListener, java.awt.event.MouseListener,
 	            us.pcsw.dbbrowser.event.StatusListener
 {
-	private JTextArea spArea; // Temp variable
+	private static final long serialVersionUID = 1L;
 	
 	/**
 	 * Constant used by reloadPreferences to help determine the average
@@ -270,19 +266,9 @@ public class ConnectionPanel
 	private ConnectionProvider provider = null;
 	
 	/**
-	 * Redo action for SQL text pane.
-	 */
-	private Action sqlRedoAction;
-		
-	/**
 	 * Manages undo operations for the SQL text pane.
 	 */
 	private UndoManager sqlUndoMgr = new UndoManager();
-	
-	/**
-	 * Undo action for SQL text pane.
-	 */
-	private Action sqlUndoAction;
 	
 	/**
 	 * Listeners to be notified of status change events.
@@ -328,7 +314,6 @@ public class ConnectionPanel
 	private JScrollPane resultsScrollPane;
 	
 	// Filechoosers for user input
-	private JFileChooser resultChooser = null;
 	private JFileChooser sqlChooser = null;
 	
 	private SQLExecutionWorker sqlExecutionWorker;
@@ -554,9 +539,7 @@ public class ConnectionPanel
 	 */
 	public void executeStatement()
 	{
-		ResultSet rs = null;
 		String sql = null;
-		StringBuffer executeMsg = null;
 		try {
 		    if (! Preferences.ignoreSelectedText()) {
 			    sql = stmtPane.getSelectedText();
@@ -586,8 +569,6 @@ public class ConnectionPanel
 		}
 		stmtPane.requestFocus();
 	}
-
-	private ReportPrinter rp;
 
 	/**
 	 * Used to execute test code.  :-)
@@ -652,7 +633,6 @@ public class ConnectionPanel
 	{
 		try {
 		    Connection con = getDatabaseConnection();
-		    DatabaseMetaData dmd = con.getMetaData();
 		    StringBuffer sb = new StringBuffer("[");
 			sb.append(provider.getServerName());
 		    sb.append("].[");
@@ -1223,9 +1203,9 @@ public class ConnectionPanel
 			// enumeration. 
 			Vector clone = (Vector)statusListeners.clone();
 			StatusListener listener;
-			Enumeration enum = clone.elements();
-			while (enum.hasMoreElements()) {
-				listener = (StatusListener)enum.nextElement();
+			Enumeration e = clone.elements();
+			while (e.hasMoreElements()) {
+				listener = (StatusListener)e.nextElement();
 				listener.statusChanged(se);
 			}
 		}
@@ -1582,7 +1562,7 @@ public class ConnectionPanel
 	 * If set to true, controls allowing the user to submit SQL queries are
 	 * enabled.  If false, the same controls are disabled.
 	 */
-    private void setActionEnabled(boolean enabled)
+    protected void setActionEnabled(boolean enabled)
     {
 		stmtPane.setEnabled(enabled);
     }

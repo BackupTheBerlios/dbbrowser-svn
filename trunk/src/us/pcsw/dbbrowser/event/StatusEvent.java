@@ -38,6 +38,8 @@ package us.pcsw.dbbrowser.event;
 public class StatusEvent
 	extends java.util.EventObject
 {
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Misc. data to be passed to the listener.
 	 */

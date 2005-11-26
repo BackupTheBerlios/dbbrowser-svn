@@ -60,7 +60,9 @@ final class HistoryListDialog
     implements java.awt.event.ActionListener,
 	       java.awt.event.MouseListener
 {
-    private JList statementList = null;
+	private static final long serialVersionUID = 1L;
+
+	private JList statementList = null;
     private JScrollPane statementScrollPane = null;
     private JPanel buttonPane = null;
     private JButton selectButton = null;
@@ -187,7 +189,6 @@ final class HistoryListDialog
     void fireActionPerformed()
     {
 		if (actionListeners != null) {
-		    ActionListener al;
 		    int index = statementList.getSelectedIndex();
 		    ActionEvent event = new ActionEvent
 				(this, index, (String)hlm.getElementAt(index));
@@ -197,9 +198,9 @@ final class HistoryListDialog
 				Vector copyOfListeners = (Vector)(actionListeners.clone());
 		
 				// Notify each listener.
-				Enumeration enum = copyOfListeners.elements();
-				while (enum.hasMoreElements()) {
-				    ((ActionListener)enum.nextElement()).actionPerformed(event);
+				Enumeration e = copyOfListeners.elements();
+				while (e.hasMoreElements()) {
+				    ((ActionListener)e.nextElement()).actionPerformed(event);
 				}
 		    }
 		}

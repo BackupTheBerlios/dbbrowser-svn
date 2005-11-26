@@ -32,6 +32,8 @@ package us.pcsw.dbbrowser.cp;
 public class StringConnectionParameter
 	extends ConnectionParameter
 {
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Maximum length for the string.  0 indicates that there is no maximum
 	 * and is the default.

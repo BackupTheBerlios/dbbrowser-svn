@@ -32,6 +32,8 @@ package us.pcsw.dbbrowser.cp;
  */
 public final class PicklistConnectionParameter extends ConnectionParameter
 {
+	private static final long serialVersionUID = 1L;
+
 	// CONSTRUCTORS
 	
 	/**
@@ -125,7 +127,7 @@ public final class PicklistConnectionParameter extends ConnectionParameter
 	{
 		return picklist;
 	}
-	private void setPickList(String[] picklist)
+	protected void setPickList(String[] picklist)
 	{
 		this.picklist = picklist;
 	}

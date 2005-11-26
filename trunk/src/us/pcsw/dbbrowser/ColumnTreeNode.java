@@ -81,7 +81,6 @@ public class ColumnTreeNode
 		this.typeName = typeName;
 
 		Vector childNodes = new Vector();
-		int i = 0;
 
 		childNodes.add("Type: " + typeName);
 		if ((type & Types.NUMERIC) == Types.NUMERIC) {
@@ -119,7 +118,6 @@ public class ColumnTreeNode
 		this.typeName = typeName;
 
 		Vector childNodes = new Vector();
-		int i = 0;
 
 		childNodes.add("Type: " + typeName);
 		if ((type & Types.NUMERIC) == Types.NUMERIC) {

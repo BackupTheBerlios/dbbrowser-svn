@@ -55,7 +55,9 @@ import javax.swing.JOptionPane;
 public final class ResultSetTableModel
     extends javax.swing.table.AbstractTableModel
 {
-    /**
+	private static final long serialVersionUID = 1L;
+
+	/**
      * Indicates that all rows have been read and all data has been cached.
      */
     boolean cacheFull = false;

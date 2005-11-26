@@ -44,7 +44,9 @@ import us.pcsw.dbbrowser.cp.*;
  */
 public final class ConnectionProvider
 	extends us.pcsw.dbbrowser.cp.ConnectionProvider
-{	
+{
+	private static final long serialVersionUID = 1L;
+	
 	private static final String[] SSL_OPTIONS = {
 			"Do Not Use SSL",
 			"Use SSL And Verify Certificate",

@@ -38,7 +38,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.WeakHashMap;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.ImageIcon;
+//import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -86,6 +86,8 @@ public final class DBViewDialog
 	extends JFrame
 	implements ActionListener, MouseListener, StatusListener
 {
+	private static final long serialVersionUID = 1L;
+
 	private int busyStatusCount = 0;
 	private JButton closeButton = null;
 	private Hashtable dbViewModels = null;
@@ -122,7 +124,7 @@ public final class DBViewDialog
 		super("Database Browser - DB View");
 
 		// Set the icon of the dialog.
-		ImageIcon icon = null; //new ImageIcon(getClass().getResource
+//		ImageIcon icon = null; //new ImageIcon(getClass().getResource
 //			("/us/pcsw/dbbrowser/resources/images/DBView.png"));
 //		setIconImage(icon.getImage());
 

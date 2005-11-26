@@ -48,6 +48,8 @@ import us.pcsw.dbbrowser.cp.*;
 public final class ConnectionProvider
     extends us.pcsw.dbbrowser.cp.ConnectionProvider
 {
+	private static final long serialVersionUID = 1L;
+	
 	/**
 	 * Can a procedure's text be retrieved.
 	 * @Return true if the text can be retrieved, else false.

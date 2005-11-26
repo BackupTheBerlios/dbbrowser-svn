@@ -43,6 +43,8 @@ import java.util.LinkedList;
 public final class HistoryListModel
 	extends javax.swing.AbstractListModel
 {
+	private static final long serialVersionUID = 1L;
+	
     /**
      * Contains the SQL statement list.
      */

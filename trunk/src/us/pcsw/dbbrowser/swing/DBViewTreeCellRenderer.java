@@ -39,6 +39,8 @@ import us.pcsw.dbbrowser.*;
 public class DBViewTreeCellRenderer
 	extends DefaultTreeCellRenderer
 {
+	private static final long serialVersionUID = 1L;
+
 	Icon catalogIcon = null;
 	Icon columnIcon = null;
 	Icon procIcon = null;

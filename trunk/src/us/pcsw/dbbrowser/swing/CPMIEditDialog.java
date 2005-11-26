@@ -51,7 +51,9 @@ import us.pcsw.util.Debug;
  */
 final class CPMIEditDialog extends JDialog
 	implements ActionListener
-{	
+{
+	private static final long serialVersionUID = 1L;
+	
 	private JButton
 		cancelButton = null,
 		saveButton = null;

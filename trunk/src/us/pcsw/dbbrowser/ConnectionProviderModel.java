@@ -265,9 +265,9 @@ public final class ConnectionProviderModel
             Vector copyOfListeners = (Vector) (listDataListeners.clone());
 
             // Notify each listener.
-            Enumeration enum = copyOfListeners.elements();
-            while (enum.hasMoreElements()) {
-                o = enum.nextElement();
+            Enumeration e = copyOfListeners.elements();
+            while (e.hasMoreElements()) {
+                o = e.nextElement();
                 switch (type) {
                     case ListDataEvent.CONTENTS_CHANGED :
                          ((ListDataListener)o).contentsChanged(lme);
@@ -296,9 +296,9 @@ public final class ConnectionProviderModel
             Vector copyOfListeners = (Vector) (tableModelListeners.clone());
 
             // Notify each listener.
-            Enumeration enum = copyOfListeners.elements();
-            while (enum.hasMoreElements()) {
-                o = enum.nextElement();
+            Enumeration e = copyOfListeners.elements();
+            while (e.hasMoreElements()) {
+                o = e.nextElement();
                 ((TableModelListener)o).tableChanged(tme);
             }
         }

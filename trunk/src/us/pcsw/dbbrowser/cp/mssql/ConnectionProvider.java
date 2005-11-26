@@ -60,7 +60,8 @@ import us.pcsw.dbbrowser.cp.*;
 public final class ConnectionProvider
 	extends us.pcsw.dbbrowser.cp.ConnectionProvider
 {
-
+	private static final long serialVersionUID = 1L;
+	
     /**
      * Gets a connection to the database based on the provided parameters.
      * @exception ClassNotFoundException indicates that the JDBC driver classes

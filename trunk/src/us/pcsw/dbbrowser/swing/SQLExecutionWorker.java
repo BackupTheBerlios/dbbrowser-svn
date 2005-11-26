@@ -207,9 +207,9 @@ final class SQLExecutionWorker extends SwingWorker
 				// enumeration. 
 				Vector clone = (Vector)statusListeners.clone();
 				StatusListener listener;
-				Enumeration enum = clone.elements();
-				while (enum.hasMoreElements()) {
-					listener = (StatusListener)enum.nextElement();
+				Enumeration e = clone.elements();
+				while (e.hasMoreElements()) {
+					listener = (StatusListener)e.nextElement();
 					listener.statusChanged(se);
 				}
 			}

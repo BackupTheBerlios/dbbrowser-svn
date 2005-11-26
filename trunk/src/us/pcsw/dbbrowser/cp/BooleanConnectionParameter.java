@@ -38,6 +38,7 @@ package us.pcsw.dbbrowser.cp;
 public class BooleanConnectionParameter
 	extends ConnectionParameter
 {
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Constructor for BooleanConnectionParameter.
