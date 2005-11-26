@@ -1,0 +1,109 @@
+Todo List for the DB Browser Application
+
+Target		Assigned	Todo
+Version		Developer	Item
+
+v 1.2.0		PAC	(done)	Consolidate prefs and ContactProvider lists into one
+						one XML config file.
+						
+v 1.2.0		PAC (done)	Create tab pane on options dialog.  Add tab for
+                        configuring Connection Providers.
+							
+v 1.2.0		PAC	(done)	Allow for saving (and loading) of connection
+                        parameters.
+
+v 1.2.0		PAC (done)	Fix bug where license.html is not loaded from within a
+						jar archive.
+
+v 1.2.0		PAC (drop)	Implement the ability to edit cells in the resultset.
+						The implementation of this feature was dropped because
+						many JDBC drivers do not yet support the JDBC 2 update
+						methods of java.sql.Resultset.
+						
+v 1.2.0		PAC	(done)	Add an option that forces ResultSetTableModel to load
+						the entire resultset rather than caching over time.
+						
+v 1.2.0		PAC (done)	Add an option that allows the user to set the cache
+						paging size.  (This code was combined with the load of
+						entire resultset mentioned in the item above.)
+						
+v 1.2.0		PAC	(done)	Put login prompt on connection panel rather than
+						in a dialog.
+						
+v 1.2.0		PAC (done)	Make DB Object browser refresh work.
+						
+v 1.2.0		PAC	(drop)	Implement the ability to display multiple resultsets
+						for statements that produce them.  The mulit-tab
+						interface is sufficient for now.  This may be
+						revisited later.
+							
+v 1.2.0		PAC (done)	Add table/view/field insertion into the sql statment
+						statement via drag-drop from database structure tree
+						tree view into SQL edit text.
+
+v 1.2.0		PAC (done)	Add reporting of row count for selects and reporting
+						of execute time for selects and updates.
+
+v 1.2.0		PAC (done)	Provide ability to save and restore size and position
+                        of main frame and db view dialog.
+
+v 1.2.1		PAC (done)	Autosize columns by doubleclicking on left column
+						header division (like Windows' mulit-column listview
+						control.)
+
+v 1.3.0		MGB/PAC		Add Toolbar
+			(done)
+
+v 1.3.0		PAC (done)	Create a generic JDBC connection provider.  The new
+						connection provider is
+						us.pcsw.dbbrowser.JDBCConnectionProvider
+
+v 1.3.0		PAC (done)	Added code to the command line parser so that the user
+						can indicate a stored connection parameters file to be
+						loaded at startup.
+
+v 1.3.0		PAC (done)	Add option to store login secret with other connection
+						info.
+
+v 1.3.0		PAC (done)	Moved Connectin provider base classes and Implemtation
+
+v 1.3.0		PAC (done)	Added right-click menu to the DB view dialog that has
+						menu items for retrieving procedure and view text.
+
+v 1.3.0		PAC (done)	Fixed a bug in which connection changes in cloned tabs
+						were not being shown in tab captions or window title.
+						
+v 1.3.0		PAC (done)	Added a configuration option for the font used to
+                        display results.
+
+v 1.4.0		PAC (done)	Made changes so that SQL statements are executed in
+                        seperate threads.  Because of this, the GUI is now
+                        able to refresh while long running SQL statements are
+                        executed.
+
+Wishlist:
+
+v ?.?.?					Add a method to see Clob column values in oracle
+                        results.
+
+v ?.?.?		MGB/PAC		Implement bug reporting feature.
+
+v ?.?.?					Create Help documentation.
+							
+v ?.?.?					Implement printing support
+
+v ?.?.?					Add syntax color highlighting for SQL statements. This
+						includes a menu option and to enable / disable syntax
+						color highlighting.  Also includes application option
+						for syntax	color highlighting to be enabled / disabled
+						by default on startup.
+
+v ?.?.?					Implement the ability to edit cells in the resultset.
+						(As of the last time I checked, the PostgreSQL and
+						 MySQL drivers do not implement the proper JDBC
+						 methods to do this.  Although DB Browser is not
+						 database implementation specific, the limitation of
+						 these two drivers does make this feature less
+						 usefull.  PAC)
+
+v ?.?.?					Applet implementation
