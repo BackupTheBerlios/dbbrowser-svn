@@ -202,6 +202,6 @@ public abstract class DataImport extends Object
 	 * @return The sample data.  The first dimension is the rows, the second
 	 *         dimension is the columns.
 	 */
-	public abstract String[][] sampleData(InputStream iStream)
+	public abstract String[][] sampleData(InputStream iStream, int rowCount)
 		throws IOException;
 }

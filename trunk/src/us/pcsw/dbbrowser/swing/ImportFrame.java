@@ -149,6 +149,7 @@ public class ImportFrame extends JFrame
 	private JProgressBar progressBar;
 	private ConnectionProvider provider;
 	private JTextArea resultsArea;
+	private JSpinner sampleRowCountSpinner;
 	private JTable sampleTable;
 	private JTextField scaleField;
 	private File selectedFile;
@@ -262,7 +263,7 @@ public class ImportFrame extends JFrame
 		constraints = new GridBagConstraints
 		(
 			0, 0,							// gridx, gridy
-			1, 1,							// gridwidth, gridheight
+			2, 1,							// gridwidth, gridheight
 			0, 0,							// weightx, weighty
 			GridBagConstraints.NORTHWEST,	// anchor
 			GridBagConstraints.NONE,		// fill
@@ -279,7 +280,7 @@ public class ImportFrame extends JFrame
 		constraints = new GridBagConstraints
 		(
 			0, 1,							// gridx, gridy
-			1, 4,							// gridwidth, gridheight
+			2, 4,							// gridwidth, gridheight
 			.5, .5,							// weightx, weighty
 			GridBagConstraints.CENTER,		// anchor
 			GridBagConstraints.BOTH,		// fill
@@ -292,6 +293,32 @@ public class ImportFrame extends JFrame
 		(
 			0, 5,							// gridx, gridy
 			1, 1,							// gridwidth, gridheight
+			0, 0,							// weightx, weighty
+			GridBagConstraints.WEST,		// anchor
+			GridBagConstraints.NONE,		// fill
+			new Insets(5, 0, 5, 5),			// insets (t,l,b,r)
+			0, 0							// padx pady
+		);
+		panel2.add(new JLabel("Sample Row Count:"), constraints);
+		
+		
+		constraints = new GridBagConstraints
+		(
+			1, 5,							// gridx, gridy
+			1, 1,							// gridwidth, gridheight
+			0.5, 0,							// weightx, weighty
+			GridBagConstraints.WEST,		// anchor
+			GridBagConstraints.NONE,		// fill
+			new Insets(5, 5, 5, 0),			// insets (t,l,b,r)
+			0, 0							// padx pady
+		);
+		sampleRowCountSpinner = new JSpinner(new SpinnerNumberModel(5, 1, 100, 1));
+		panel2.add(sampleRowCountSpinner, constraints);
+		
+		constraints = new GridBagConstraints
+		(
+			0, 6,							// gridx, gridy
+			2, 1,							// gridwidth, gridheight
 			0, 0,							// weightx, weighty
 			GridBagConstraints.NORTHWEST,	// anchor
 			GridBagConstraints.NONE,		// fill
@@ -306,8 +333,8 @@ public class ImportFrame extends JFrame
 		tableCombo.setEditable(true);
 		constraints = new GridBagConstraints
 		(
-			0, 6,							// gridx, gridy
-			1, 1,							// gridwidth, gridheight
+			0, 7,							// gridx, gridy
+			2, 1,							// gridwidth, gridheight
 			.5, 0,							// weightx, weighty
 			GridBagConstraints.NORTHWEST,	// anchor
 			GridBagConstraints.HORIZONTAL,	// fill
@@ -546,6 +573,7 @@ public class ImportFrame extends JFrame
 		sampleTable.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		sampleTable.setColumnSelectionAllowed(true);
 		sampleTable.setRowSelectionAllowed(false);
+		sampleTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		constraints = new GridBagConstraints
 		(
 			0, 3,							// gridx, gridy
@@ -799,7 +827,11 @@ public class ImportFrame extends JFrame
 						}
 					);
 				FileInputStream fis = new FileInputStream(f);
-				String[][] data = dataImport.sampleData(fis);
+				String[][] data =
+					dataImport.sampleData(
+							fis,
+							((Integer)sampleRowCountSpinner.getValue()).intValue()
+						);
 				columns = new ImportColumn[data[0].length];
 				((SampleDataTableModel)sampleTable.getModel()).setData(data);
 				sampleTable.setColumnSelectionInterval(0, 0);

@@ -60,14 +60,19 @@ public class CSVImport extends DataImport
 	/**
 	 * @see us.pcsw.dbbrowser.dataimport.DataImport#sampleData(java.io.InputStream)
 	 */
-	public String[][] sampleData(InputStream iStream)
+	public String[][] sampleData(InputStream iStream, int rowCount)
 		throws IOException
 	{
 		int colCount = 0;
 		Vector rows = new Vector();
 		String[] row;
 		CSVParser parser = new CSVParser(iStream);
-		for (row = parser.getLine(); rows.size() < 6 && row != null; row = parser.getLine()) {
+		rowCount++;
+		for (
+				row = parser.getLine(); rows.size() < rowCount &&
+				row != null; row = parser.getLine()
+			)
+		{
 			if (row.length > colCount) {
 				colCount = row.length;
 			}
