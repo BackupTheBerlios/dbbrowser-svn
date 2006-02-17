@@ -24,18 +24,20 @@ package us.pcsw.dbbrowser.bsh.commands;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import java.util.List;
-
 import us.pcsw.dbbrowser.CachingResultSetTableModel;
 import us.pcsw.dbbrowser.LoadedResultSetTableModel;
+import us.pcsw.dbbrowser.bsh.BeanShellSession;
+import us.pcsw.dbbrowser.bsh.DbbBshConstants;
 
 import bsh.CallStack;
+import bsh.EvalError;
 import bsh.Interpreter;
 
 /**
- * us.pcsw.dbbrowser.bsh.commands.DbbPrintResult
+ * us.pcsw.dbbrowser.bsh.commands.dbbPrintResult
  * -
- * Description for DbbPrintResult.
+ * The DbbPrintResults command outputs the results of the resultset to
+ * the dbbrowser resultset table.
  *
  * <P><STRONG>Revision History:</STRONG><UL>
  * <LI>Feb 16, 2006 This class was created by pchapman.</LI>
@@ -43,21 +45,14 @@ import bsh.Interpreter;
  *
  * @author pchapman
  */
-public class DbbPrintResult
+public class dbbPrintResult
 {
 	/**
 	 * This class only has static methods.
 	 */
-	private DbbPrintResult()
+	private dbbPrintResult()
 	{
 		super();
-	}
-	
-	private static List results;
-	
-	public static List getResultSetModels()
-	{
-		return results;
 	}
 	
 	/**
@@ -68,25 +63,30 @@ public class DbbPrintResult
 	public static void invoke( 
 			Interpreter env, CallStack callstack, ResultSet resultSet
 		) 
+		throws EvalError, SQLException
 	{
 		invoke(env, callstack, resultSet, true);
 	}
 	
 	/**
-	 * Implement dir( String directory ) command.
+	 * Implement dbbPrintResult( ResultSet resultSet ) command.  If loadAll is
+	 * true, the resultset's entire contents will be read into memory.  This
+	 * may be memory intensive and may take a long time.  If it is false, the
+	 * resultset is held and data is read on demand.  The calling script must
+	 * be careful that the resultset or its statement is not closed.
 	 */
 	public static void invoke( 
 			Interpreter env, CallStack callstack, ResultSet resultSet, boolean loadAll
-		) 
+		)
+		throws EvalError, SQLException
 	{
-		try {
+		BeanShellSession sess = (BeanShellSession)env.get(DbbBshConstants.VAR_BEAN_SHELL_SESSION);
+		if (sess != null) {
 			if (loadAll) {
-				results.add(new LoadedResultSetTableModel(resultSet));
+				sess.getResultList().add(new LoadedResultSetTableModel(resultSet));
 			} else {
-				results.add(new CachingResultSetTableModel(resultSet));
+				sess.getResultList().add(new CachingResultSetTableModel(resultSet));
 			}
-		} catch (SQLException sqle) {
-			results.add(sqle);
 		}
 	}
 }

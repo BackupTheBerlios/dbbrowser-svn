@@ -28,18 +28,8 @@ import java.sql.Statement;
 
 import java.util.Date;
 
-import java.util.Enumeration;
-import java.util.Vector;
-
-import javax.swing.SwingUtilities;
-
-
-
 import us.pcsw.dbbrowser.event.StatusEvent;
-import us.pcsw.dbbrowser.event.StatusListener;
 import us.pcsw.dbbrowser.event.StatusTypeEnum;
-
-import us.pcsw.swing.SwingWorker;
 
 /**
  *  us.pcsw.dbbrowser.swing.ReportPrinter
@@ -52,7 +42,7 @@ import us.pcsw.swing.SwingWorker;
  *                   executed. </LI>
  * </UL></P>
  */
-public final class SQLExecutionWorker extends SwingWorker
+public final class SQLExecutionWorker extends ExecutionWorker
 {
 	/**
 	 * Indicates that the query is being cancelled so that the user is not
@@ -77,11 +67,6 @@ public final class SQLExecutionWorker extends SwingWorker
 	private Statement stmt = null;
 	
 	/**
-	 * List of listeners to be notified of status events.
-	 */
-	private Vector statusListeners;
-	
-	/**
 	 * Creates a new SQLExcecutionWorker.
 	 * @param con The connection to the database on which the statement will
 	 *            be run.
@@ -96,21 +81,6 @@ public final class SQLExecutionWorker extends SwingWorker
 			this.con = con;
 		}
 		setSQL(sql);
-	}
-
-	/**
-	 * Adds a listener to the list of those to be notified of status events
-	 * thrown by this class.
-	 * @param listener The listener.
-	 */
-	public void addStatusListener(StatusListener listener)
-	{
-		if (statusListeners == null) {
-			statusListeners = new Vector(1, 1);
-		}
-		if (! statusListeners.contains(listener)) {
-			statusListeners.add(listener);
-		}
 	}
 
 	public void interrupt() {
@@ -156,7 +126,6 @@ public final class SQLExecutionWorker extends SwingWorker
 					} else {
 						rstm = new CachingResultSetTableModel(rs);
 					}
-					rstm.getValueAt(0,0); // Initialize the cache
 					execResults.getResultSetModelList().add(rstm);
 				} else {
 					// We have update results
@@ -210,42 +179,6 @@ public final class SQLExecutionWorker extends SwingWorker
 	}
 	
 	/**
-	 * Notifies all listeners of a status event.
-	 * @param ae The event to notify the listeners of.
-	 */
-	void notifyStatusListeners(StatusEvent se)
-	{
-		if (SwingUtilities.isEventDispatchThread()) {
-			if (statusListeners != null) {
-				// Clone the vector because we do not want to run into trouble if a
-				// listener adds or removes itself while we are iterating through the
-				// enumeration. 
-				Vector clone = (Vector)statusListeners.clone();
-				StatusListener listener;
-				Enumeration e = clone.elements();
-				while (e.hasMoreElements()) {
-					listener = (StatusListener)e.nextElement();
-					listener.statusChanged(se);
-				}
-			}
-		} else {
-			SwingUtilities.invokeLater(new NotifyWorker(this, se));
-		}
-	}
-	
-	/**
-	 * Removes the status listener from those that should be notified of
-	 * status events.
-	 * @param listener The listener.
-	 */
-	public void removeStatusListener(StatusListener listener)
-	{
-		if (statusListeners != null) {
-			statusListeners.remove(listener);
-		}
-	}
-	
-	/**
 	 * Sets the SQL to execute.
 	 */
 	private void setSQL(String sql)
@@ -255,26 +188,5 @@ public final class SQLExecutionWorker extends SwingWorker
 		} else {
 			this.sql = sql;
 		}
-	}
-}
-
-/**
- * Helper class for SQLExceptionWorker.
- */
-class NotifyWorker extends Object
-	implements Runnable
-{
-	private StatusEvent se;
-	private SQLExecutionWorker worker;
-	
-	NotifyWorker(SQLExecutionWorker worker, StatusEvent se)
-	{
-		this.se = se;
-		this.worker = worker;
-	}
-	
-	public void run()
-	{
-		worker.notifyStatusListeners(se);
 	}
 }

@@ -23,11 +23,10 @@ package us.pcsw.dbbrowser.bsh;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 
 /**
- * A token object that can be used by the DBBrowser beanshell command objects
- * differentiate between different sessions.
+ * An object that contains all the results of running beanshell scripts.  This
+ * is the output of the BshExcecurtionWorker.
  *
  * <P><STRONG>Revision History:</STRONG><UL>
  * <LI>Feb 17, 2006 This class was created by pchapman.</LI>
@@ -35,59 +34,57 @@ import java.util.UUID;
  *
  * @author pchapman
  */
-public final class BeanShellSession
+public final class BshExecutionResults
 {
 	// CONSTRUCTORS
 	
-	public BeanShellSession()
+	/**
+	 * Creates a new instance.
+	 */
+	public BshExecutionResults()
 	{
 		super();
-		id = UUID.randomUUID();
-		resultList = new LinkedList();
+		exceptionList = new LinkedList();
+		resultSetModelList = new LinkedList();
 	}
 
 	// MEMBERS
 	
-	private UUID id;
-	public UUID getId()
+	private List exceptionList;
+	public List getExceptionList()
 	{
-		return id;
+		return exceptionList;
 	}
 	
-	private List resultList;
-	public List getResultList()
+	private String output;
+	public String getOutput()
 	{
-		return resultList;
+		return output;
+	}
+	void setOutput(String output)
+	{
+		this.output = output;
 	}
 	
-	/**
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	public boolean equals(Object obj)
+	private List resultSetModelList;
+	public List getResultSetModelList()
 	{
-		if (obj instanceof BeanShellSession) {
-			return ((BeanShellSession)obj).getId().equals(id);
-		} else {
-			return false;
-		}
+		return resultSetModelList;
+	}
+	void setResultSetModelList(List resultSetModelList)
+	{
+		this.resultSetModelList = resultSetModelList;
 	}
 	
-	/*&
-	 * @see java.lang.Object#hashCode()
-	 */
-	public int hashCode()
+	private long runTimeMills;
+	public long getRunTimeMills()
 	{
-		return id.hashCode();
+		return runTimeMills;
 	}
-	
-	/**
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString()
+	void setRunTimeMills(long runTimeMills)
 	{
-		return "BeanShellSession: " + id.toString();
+		this.runTimeMills = runTimeMills;
 	}
 	
 	// METHODS
-		
 }

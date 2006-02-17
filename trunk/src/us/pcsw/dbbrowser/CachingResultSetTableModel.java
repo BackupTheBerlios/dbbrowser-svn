@@ -198,6 +198,8 @@ public final class CachingResultSetTableModel
     {
 		this.rs = rs;
 		cacheFull = false;
+		// Pull first cached page of results
+		getValueAt(0, 0, true);
     }
     
     protected boolean isResultSetLoaded(ResultSet rs)

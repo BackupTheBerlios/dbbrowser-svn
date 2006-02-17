@@ -21,6 +21,7 @@
  */
 package us.pcsw.dbbrowser.swing;
 
+import us.pcsw.dbbrowser.ExecutionWorker;
 import us.pcsw.dbbrowser.HistoryListModel;
 import us.pcsw.dbbrowser.Preferences;
 import us.pcsw.dbbrowser.ResultSetTableModel;
@@ -84,6 +85,8 @@ import javax.swing.text.TabStop;
 
 import javax.swing.undo.UndoManager;
 
+import us.pcsw.dbbrowser.bsh.BshExecutionResults;
+import us.pcsw.dbbrowser.bsh.BshExecutionWorker;
 import us.pcsw.dbbrowser.cp.ConnectionProvider;
 
 import us.pcsw.dbbrowser.event.ElapsedTimeEventTimer;
@@ -329,7 +332,7 @@ public class ConnectionPanel
 	// Filechoosers for user input
 	private JFileChooser sqlChooser = null;
 	
-	private SQLExecutionWorker sqlExecutionWorker;
+	private ExecutionWorker worker;
 
 	/**
 	 * Constructor to initialize the Panel.
@@ -432,8 +435,8 @@ public class ConnectionPanel
 	
 	public void cancelStatement()
 	{
-		if (sqlExecutionWorker != null) {
-			sqlExecutionWorker.interrupt();
+		if (worker instanceof SQLExecutionWorker) {
+			((SQLExecutionWorker)worker).interrupt();
 		}
 	}
 
@@ -538,7 +541,7 @@ public class ConnectionPanel
 		}
 
 		boolean b = (stmtPane.getText().length() > 0);
-		cancelButton.setEnabled(sqlExecutionWorker != null);
+		cancelButton.setEnabled(! (worker instanceof SQLExecutionWorker));
 		executeButton.setEnabled(b && timer == null);
 		clearButton.setEnabled(b);
 		testButton.setEnabled(Debug.on() && b);
@@ -560,20 +563,27 @@ public class ConnectionPanel
 		    if (sql == null || sql.length() == 0) {
 		    	sql = stmtPane.getText();
 		    }
-		    if (sql == null || sql.length() == 0) {
+		    sql = sql.trim();
+		    if (sql.length() == 0) {
 				getResultSetTableModel().setResultSet(null);
-				msgArea.setText("There is no SQL statement to execute.");
+				msgArea.setText("There is no SQL statement or BeanShell Script to execute.");
 		    } else {
+		    	boolean isScript = sql.toLowerCase().startsWith("@bsh");
 		    	executeButton.setEnabled(false);
-				setMessage("Statement is being executed...", false);
-				sqlExecutionWorker =
-					new SQLExecutionWorker(getDatabaseConnection(), sql);
-				sqlExecutionWorker.addStatusListener(this);
+				setMessage((isScript ? "Script" : "Statement") + " is being executed...", false);
+				if (isScript) {
+					sql = sql.substring(4, sql.length()).trim();
+					worker = new BshExecutionWorker(getConnectionProvider(), sql);
+					cancelButton.setEnabled(false);
+				} else {
+					worker = new SQLExecutionWorker(getDatabaseConnection(), sql);
+					cancelButton.setEnabled(true);
+				}
+				worker.addStatusListener(this);
 				timer = new Timer();
 				ElapsedTimeEventTimer t = new ElapsedTimeEventTimer(this);
 				timer.schedule(t, 500, 500);
-				sqlExecutionWorker.start();
-				cancelButton.setEnabled(true);
+				worker.start();
 		    }
 		} catch (java.lang.Throwable e) {
 			UIManager.getLookAndFeel().provideErrorFeedback(msgArea);
@@ -780,7 +790,8 @@ public class ConnectionPanel
 	 */
 	public boolean hasResultSet()
 	{
-		return (getResultSetTableModel().getRowCount() > 0);
+		ResultSetTableModel model = getResultSetTableModel();
+		return (model != null && model.getRowCount() > 0);
 	}
 
     /**
@@ -1132,7 +1143,7 @@ public class ConnectionPanel
 				setMessage("SQL script read from " + file.getName() +	".", false);
 				boolean b = (stmtPane.getText().length()> 0);
 				executeButton.setEnabled(b);
-				cancelButton.setEnabled(sqlExecutionWorker != null);
+				cancelButton.setEnabled(! (worker instanceof SQLExecutionWorker));
 				clearButton.setEnabled(b);
 				testButton.setEnabled(Debug.on() && b);
 	
@@ -1402,6 +1413,61 @@ public class ConnectionPanel
 		db = null;
     }
 
+	public void scriptExecuted(StatusEvent se) {
+		// This is the result of a beanshell script being run.  Display the results.
+		BshExecutionWorker worker = (BshExecutionWorker)se.getSource();
+		BshExecutionResults results = (BshExecutionResults)worker.get();
+		StringBuffer executeMsg = new StringBuffer
+				("Beanshell script has been executed.  Execution time ");
+		executeMsg.append(formatExecuteTime(results.getRunTimeMills()));
+		executeMsg.append('.');
+
+		int count = results.getResultSetModelList().size();
+		
+		// Delete any unneeded ResultSetPanels.  Always leave the first panel
+		// and the last component, which will be the script output panel.
+		while (outputTabbedPane.getComponentCount() > 2 && (outputTabbedPane.getComponentCount() - 1) > count) {
+			outputTabbedPane.remove(outputTabbedPane.getComponentCount() - 2);
+		}
+		
+		if (count == 0) {
+			((ResultSetPanel)outputTabbedPane.getComponentAt(0)).setResultSetTableModel(null);
+		} else {
+			// Add any needed ResultSetPanels.  Make sure that the last component
+			// is the script output panel.
+			for (int i = outputTabbedPane.getComponentCount(); i < count + 1; i++) {
+				outputTabbedPane.add(new ResultSetPanel(), RESULTS_TAB_PREFIX + String.valueOf(i), i - 1);
+			}
+			
+			// Set resultset models
+			List list = results.getResultSetModelList();
+			for (int i = 0; i < count; i++) {
+				((ResultSetPanel)outputTabbedPane.getComponentAt(i)).setResultSetTableModel((ResultSetTableModel)list.get(i));
+			}
+		}
+		
+		for (Iterator iter = results.getExceptionList().iterator(); iter.hasNext(); ) {
+			executeMsg.append('\n');
+			executeMsg.append(((Throwable)iter.next()).getMessage());
+		}
+		
+		shellOutputPane.setText(results.getOutput());
+		
+		setMessage(executeMsg.toString(), false);
+		
+		if (results.getExceptionList().size() > 0) {
+			UIManager.getLookAndFeel().provideErrorFeedback(msgArea);
+		}
+	
+		// Add the latest statement to the list and set it as the
+		// selected one.
+		historyList.addStatement(worker.getScript());
+		historySelection.setSelectionInterval(
+				historyList.getSize() - 1,
+				historyList.getSize() - 1
+			);
+	}
+
 	public void sqlExceptionThrown(Throwable t)
 	{
 		// An error was encountered running the statement.
@@ -1479,16 +1545,24 @@ public class ConnectionPanel
 	 * @param se The StateEvent object which holds status change information.
 	 */
     public void statusChanged(StatusEvent se) {
-    	if (se.getSource() instanceof SQLExecutionWorker)
+    	if (se.getSource() instanceof ExecutionWorker)
     	{
     		if (se.getType() == StatusTypeEnum.NOT_BUSY) {
 	    		try {
 					if (se.getData() instanceof Throwable) {
 						sqlExceptionThrown((Throwable)se.getData());
-					} else if (sqlExecutionWorker.isCancelled()) {
+					} else if (
+							(worker instanceof SQLExecutionWorker) &&
+							((SQLExecutionWorker)worker).isCancelled()
+						)
+					{
 						setMessage("SQL statement has been cancelled.", false);
 					} else {
-						sqlExecuted(se);
+						if (worker instanceof SQLExecutionWorker) {
+							sqlExecuted(se);
+						} else {
+							scriptExecuted(se);
+						}
 					}
 	    		} catch (Throwable t) {
 					UIManager.getLookAndFeel().provideErrorFeedback(msgArea);
@@ -1503,7 +1577,7 @@ public class ConnectionPanel
 	    				timer.cancel();
 	    				timer = null;
 	    			}
-					sqlExecutionWorker = null;
+					worker = null;
 
 	    			// Update the UI.
 					evaluateDataStatus();

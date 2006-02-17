@@ -28,8 +28,6 @@ import java.io.Writer;
 import javax.swing.JTextArea;
 
 /**
- * us.pcsw.dbbrowser.bsh.JTextAreaWriter
- * -
  * A writer used to get output from the beanshell interpreter and write it to
  * a JTextArea.  No other class should manipulate the JTextArea's text member
  * other than this class.
