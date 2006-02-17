@@ -25,14 +25,22 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
 import java.util.Date;
+
 import java.util.Enumeration;
 import java.util.Vector;
+
 import javax.swing.SwingUtilities;
+
+import us.pcsw.dbbrowser.CachingResultSetTableModel;
+
 import us.pcsw.dbbrowser.ResultSetTableModel;
+
 import us.pcsw.dbbrowser.event.StatusEvent;
 import us.pcsw.dbbrowser.event.StatusListener;
 import us.pcsw.dbbrowser.event.StatusTypeEnum;
+
 import us.pcsw.swing.SwingWorker;
 
 /**
@@ -60,11 +68,6 @@ final class SQLExecutionWorker extends SwingWorker
 	 */
 	private Connection con = null;
 
-	/**
-	 * The runtime of the statement in miliseconds.
-	 */
-	private long runTime = 0;
-	
 	/**
 	 * The sql statement to execute.
 	 */
@@ -130,6 +133,7 @@ final class SQLExecutionWorker extends SwingWorker
 	 */
 	public Object construct()
 	{
+		SQLExecutionResults execResults = new SQLExecutionResults();
 		long time = 0;
 		try {
 			stmt = con.createStatement();
@@ -137,31 +141,40 @@ final class SQLExecutionWorker extends SwingWorker
 			notifyStatusListeners(new StatusEvent(this, StatusTypeEnum.QUERY_STARTED));
 			time = new Date().getTime();
 			stmt.execute(getSQL());
-			setRunTime(new Date().getTime() - time);
+			execResults.setRunTimeMills(new Date().getTime() - time);
 			notifyStatusListeners(new StatusEvent(this, StatusTypeEnum.QUERY_ENDED));
-			ResultSet rs = stmt.getResultSet();
-			if (rs == null) {
-				return new Integer(stmt.getUpdateCount());
+			ResultSet rs = null;
+			int count = stmt.getUpdateCount();
+			if (count == -1) {
+			// The following code is commented out because though it would
+			// allow multiple resultsets to be returned, it would mean that
+			// CachingResultSetTableModels could not be used.
+//			do {
+				rs = stmt.getResultSet();
+				if (rs != null) {
+					ResultSetTableModel rstm = new CachingResultSetTableModel(rs);
+					rstm.getValueAt(0,0); // Initialize the cache
+					execResults.getResultSetModelList().add(rstm);
+				}
+//			} while (stmt.getMoreResults() && stmt.getUpdateCount() == -1);
 			} else {
-				ResultSetTableModel rstm = new ResultSetTableModel(rs);
-				rstm.getValueAt(0,0); // Initialize the cache
-				return rstm;				
+				execResults.setResultCount(count);
 			}
 		} catch (SQLException e) {
 			// Don't report the error if the statement is being cancelled.
 			if (cancel) {
-				setRunTime(new Date().getTime() - time);
-				return null;
+				execResults.setRunTimeMills(new Date().getTime() - time);
 			} else {
-				setRunTime(new Date().getTime() - time);
+				execResults.setRunTimeMills(new Date().getTime() - time);
+				execResults.getExceptionList().add(e);
 				notifyStatusListeners(new StatusEvent(this, StatusTypeEnum.QUERY_ENDED));
-				return e;
 			}
 		} catch (Throwable t) {
-			setRunTime(0);
+			execResults.setRunTimeMills(0);
+			execResults.getExceptionList().add(t);
 			notifyStatusListeners(new StatusEvent(this, StatusTypeEnum.QUERY_ENDED));
-			return t;
 		}
+		return execResults;
 	}
 	
 	/**
@@ -176,17 +189,9 @@ final class SQLExecutionWorker extends SwingWorker
 	/**
 	 * Returns the string that was executed.
 	 */
-	public synchronized String getSQL()
+	public String getSQL()
 	{
 		return sql;
-	}
-	
-	/**
-	 * Gets the time the statement ran in milliseconds.
-	 */
-	public synchronized long getRunTime()
-	{
-		return runTime;
 	}
 	
 	public boolean isCancelled()
@@ -229,25 +234,17 @@ final class SQLExecutionWorker extends SwingWorker
 			statusListeners.remove(listener);
 		}
 	}
-
+	
 	/**
 	 * Sets the SQL to execute.
 	 */
-	private synchronized void setSQL(String sql)
+	private void setSQL(String sql)
 	{
 		if (sql == null) {
 			throw new IllegalArgumentException("The sql statement cannot be null.");
 		} else {
 			this.sql = sql;
 		}
-	}
-	
-	/**
-	 * Sets the time the statement ran in milliseconds.
-	 */
-	private synchronized void setRunTime(long runTime)
-	{
-		this.runTime = runTime;
 	}
 }
 

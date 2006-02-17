@@ -24,6 +24,7 @@ package us.pcsw.dbbrowser.swing;
 import us.pcsw.dbbrowser.HistoryListModel;
 import us.pcsw.dbbrowser.Preferences;
 import us.pcsw.dbbrowser.ResultSetTableModel;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -33,21 +34,26 @@ import java.awt.Frame;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.Rectangle;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+
 import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Timer;
 import java.util.Vector;
+
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -60,27 +66,33 @@ import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
-import javax.swing.JTable;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
+
 import javax.swing.event.CaretEvent;
-import javax.swing.table.JTableHeader;
+
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.TabSet;
 import javax.swing.text.TabStop;
+
 import javax.swing.undo.UndoManager;
 
 import us.pcsw.dbbrowser.cp.ConnectionProvider;
+
 import us.pcsw.dbbrowser.event.ElapsedTimeEventTimer;
 import us.pcsw.dbbrowser.event.StatusEvent;
 import us.pcsw.dbbrowser.event.StatusListener;
 import us.pcsw.dbbrowser.event.StatusTypeEnum;
+
 import us.pcsw.util.Debug;
+
 import us.pcsw.util.tablemodelexport.TableModelExport;
+
 import us.pcsw.swing.BasicFileFilter;
 import us.pcsw.swing.SearchAndReplaceDialog;
 
@@ -213,7 +225,7 @@ import us.pcsw.swing.SearchAndReplaceDialog;
 public class ConnectionPanel
 	extends javax.swing.JPanel
 	implements java.awt.event.ActionListener, java.awt.event.KeyListener,
-	            javax.swing.event.CaretListener, java.awt.event.MouseListener,
+	            javax.swing.event.CaretListener,
 	            us.pcsw.dbbrowser.event.StatusListener
 {
 	private static final long serialVersionUID = 1L;
@@ -224,6 +236,8 @@ public class ConnectionPanel
 	 */
 	private static final String ALPHANUMERIC =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	
+	private static final String RESULTS_TAB_PREFIX = "Results ";
 
 	/**
 	 * A reference to the database connection
@@ -290,6 +304,8 @@ public class ConnectionPanel
 	// Gui Elements
 	private LoginPanel loginPane;
 	private JSplitPane outputSplitPane;
+	private JTabbedPane outputTabbedPane;
+	private JTextPane shellOutputPane;
 	private JSplitPane sPane;
 	private JLabel positionLabel;
 	private JPanel topPane;
@@ -307,11 +323,6 @@ public class ConnectionPanel
 	
 	// Command buttons
 	private JButton executeButton, testButton, cancelButton, clearButton;
-	
-	// Table for displaying results
-	private JTable results;
-//	private ResultSetTableModel resultsTableModel;
-	private JScrollPane resultsScrollPane;
 	
 	// Filechoosers for user input
 	private JFileChooser sqlChooser = null;
@@ -686,7 +697,17 @@ public class ConnectionPanel
      */
     ResultSetTableModel getResultSetTableModel()
     {
-		return (ResultSetTableModel)results.getModel();
+    	Component comp = getSelectedOutputPanel();
+    	if (comp instanceof ResultSetPanel) {
+    		return ((ResultSetPanel)comp).getResultSetTableModel();
+    	} else {
+    		return null;
+    	}
+    }
+    
+    Component getSelectedOutputPanel()
+    {
+    	return outputTabbedPane.getSelectedComponent();
     }
 
     /**
@@ -976,24 +997,24 @@ public class ConnectionPanel
 		msgPanel.add(msgAreaPane, BorderLayout.CENTER);
 	
 		outputSplitPane.setTopComponent(msgPanel);
-			
-		// Table for displaying results
-		results = new JTable(new ResultSetTableModel());
-		results.getTableHeader().addMouseListener(this);
-		results.setAutoCreateColumnsFromModel(true);
-		results.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		results.setCellSelectionEnabled(true);
-		results.addKeyListener(this);
-		resultsScrollPane = new JScrollPane();
-		resultsScrollPane.setVerticalScrollBarPolicy
-		    (JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		resultsScrollPane.setHorizontalScrollBarPolicy
-		    (JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		resultsScrollPane.setViewportView(results);
-		resultsScrollPane.setColumnHeaderView
-		    (results.getTableHeader());
-		resultsScrollPane.setPreferredSize(new Dimension(450,250));
-		outputSplitPane.setBottomComponent(resultsScrollPane);
+		
+		// Output
+		outputTabbedPane = new JTabbedPane();
+		outputTabbedPane.setTabPlacement(JTabbedPane.BOTTOM);
+		outputTabbedPane.add(new ResultSetPanel(), RESULTS_TAB_PREFIX + "1");
+		outputTabbedPane.setMnemonicAt(0, 'R');
+		
+		shellOutputPane = new JTextPane();
+		JScrollPane jsp = new JScrollPane(shellOutputPane);
+		jsp.setVerticalScrollBarPolicy
+			(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		jsp.setHorizontalScrollBarPolicy
+			(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		jsp.setPreferredSize(new Dimension(450,250));
+		outputTabbedPane.add(jsp, "Shell Output");
+		outputTabbedPane.setMnemonicAt(1, 'O');
+		
+		outputSplitPane.setBottomComponent(outputTabbedPane);
 		
 		sPane.setBottomComponent(outputSplitPane);
 
@@ -1126,64 +1147,6 @@ public class ConnectionPanel
 	}
 
 	/**
-	 * @see java.awt.event.MouseListener#mouseClicked(MouseEvent)
-	 */
-	public void mouseClicked(MouseEvent e)
-	{
-		if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
-			JTableHeader tableHeader = results.getTableHeader();
-			if (e.getSource() == tableHeader) {
-				// Determine which column header was double-clicked and what
-				// position of it is in the container.
-				int column = tableHeader.columnAtPoint(e.getPoint());
-				Rectangle rect = tableHeader.getHeaderRect(column);
-				// Allow 2 pixels to the left and right of the column's right
-				// boarder for double-click
-				int leftBound = rect.x + rect.width - 5;
-				int rightBound = rect.x + rect.width + 5;
-				if (e.getX() > leftBound && e.getX() < rightBound) {
-					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					// The user clicked on the right boarder, resize the column
-					// as per best fit.
-					Component cellrenderer = null;
-					int desiredWidth = 0;
-					int maxWidth = 0;
-					// Resize the column to best fit.
-					for (int i = 0; i < getResultSetTableModel().getCachedRowCount(); i++) {
-						cellrenderer = results.getCellRenderer(i, column).getTableCellRendererComponent(results, results.getValueAt(i, column), false, false, i, column);
-						desiredWidth = cellrenderer.getPreferredSize().width;
-						if (desiredWidth > maxWidth) {
-							maxWidth = desiredWidth;
-						}
-					}
-					tableHeader.getColumnModel().getColumn(column).setPreferredWidth(maxWidth + 10);
-					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-				}
-			}
-		}
-	}
-
-	/**
-	 * @see java.awt.event.MouseListener#mouseEntered(MouseEvent)
-	 */
-	public void mouseEntered(MouseEvent e) {}
-
-	/**
-	 * @see java.awt.event.MouseListener#mouseExited(MouseEvent)
-	 */
-	public void mouseExited(MouseEvent e) {}
-
-	/**
-	 * @see java.awt.event.MouseListener#mousePressed(MouseEvent)
-	 */
-	public void mousePressed(MouseEvent e) {}
-
-	/**
-	 * @see java.awt.event.MouseListener#mouseReleased(MouseEvent)
-	 */
-	public void mouseReleased(MouseEvent e) {}
-
-	/**
 	 * Notifies all listeners of a status event.
 	 * @param ae The event to notify the listeners of.
 	 */
@@ -1231,7 +1194,6 @@ public class ConnectionPanel
 	{
 		stmtPane.setFont(Preferences.getSQLFont());
 		msgAreaPane.setFont(Preferences.getSQLFont());
-		results.setFont(Preferences.getResultsFont());
 
 		// This entire code for figuring out where to set tab stops seems like
 		// one big hack, but I haven't been able to figure out a better way.
@@ -1321,187 +1283,6 @@ public class ConnectionPanel
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			handleException(t);	
 		}
-		
-//		// This method has grown quite large.  It would be a good idea to break
-//		// this up into several smaller methods in the near future.
-//		try {
-//		    // Initialize
-//	    	File file = null;
-//		    FileWriter outFile = null;
-//		    int columns, response;
-//	    	Object obj = null;
-//	    	String quoteEsc = null;
-//			char quoteIdentifier;
-//			String sql = "";
-//			StringBuffer sb = null;
-//			
-//			// Lazely create the save result file chooser.
-//			if (resultChooser == null) {
-//				resultChooser = new JFileChooser();
-//			    resultChooser.setFileFilter(new BasicFileFilter("sql", "Insert SQL Statements"));
-//			    resultChooser.addChoosableFileFilter(new BasicFileFilter("csv", "Comma Seperated Values"));
-//			    resultChooser.setDialogTitle("Save SQL Result");
-//			}
-//	
-//		    // Get the path/name of the file to save the file to.
-//		    response = resultChooser.showSaveDialog(this);
-//	    	if (response == JFileChooser.APPROVE_OPTION) {
-//				file = resultChooser.getSelectedFile();
-//				// Test for file's existance and user's willingness to
-//				//  overwrite it.
-//				if (file.exists()) {
-//				    response = JOptionPane.showConfirmDialog
-//						(null, 
-//						 "Overwrite the existing file " + file.getName() + "?",
-//						 "Overwrite Existing File",
-//						 JOptionPane.YES_NO_OPTION);
-//				} else {
-//				    response = JOptionPane.YES_OPTION;
-//				}
-//				if (response == JOptionPane.YES_OPTION) {
-//					// The user wants to save the result as a set of insert
-//					// statemnts.  Find out the name of the table to insert
-//					// into.
-//					if (file.getName().endsWith(".sql")) {
-//						sql = JOptionPane.showInputDialog
-//											(null, "What is the name of the " +
-//										 	 "table to insert the data into?", 
-//										 	 "Insert Table Name",
-//										 	 JOptionPane.QUESTION_MESSAGE);
-//						if (sql == null) {
-//							return; 
-//						}
-//					}
-//				    	
-//				    // Save the SQL result
-//				    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-//					notifyStatusListeners
-//						(new StatusEvent(this, StatusTypeEnum.BUSY));
-//					
-//					// Get the table model that holds the results.
-//					ResultSetTableModel resultsTableModel =
-//										 getResultSetTableModel();
-//					
-//				    // Set up our output
-//				    outFile = new FileWriter(file);
-//				    
-//				    // Create column headers or the first portion of the
-//				    // INSERT statements, which includes column names.
-//				    sb = new StringBuffer();
-//				    if (sql.length() > 0) {
-//				    	sb.append("INSERT INTO ");
-//				    	sb.append(sql);
-//				    	sb.append('(');
-// 				    }
-//					columns = resultsTableModel.getColumnCount();
-//				    for (int i = 0; i < columns; i++) {
-//						if (i > 0) {
-//							sb.append(',');
-//						}
-//						if (sql.length() == 0) {
-//							sb.append('"');
-//							sb.append(resultsTableModel.getColumnName(i));
-//							sb.append('"');
-//						} else {
-//							sb.append(resultsTableModel.getColumnName(i));
-//						}
-//				    }
-//				    if (sql.length() > 0) {
-//				    	// Finish the first portion of the INSERT statements.
-//				    	// Save it because we'll need to prepend the values
-//				    	// with this string on every row.
-//				    	sb.append(") VALUES (");
-//				    	sql = sb.toString();
-//				    	// Set up the quoted identier that will be used to
-//				    	// surround strings.
-//				    	quoteEsc = "''";
-//				    	quoteIdentifier = '\'';
-//				    } else {
-//						// Write the column headers to file as they comprise
-//						// the first row.
-//						outFile.write(sb.toString());
-//						outFile.write('\n');
-//						// Set up the quoted identier that will be used to
-//						// surround strings.
-//				    	quoteEsc = "\\\"";
-//				    	quoteIdentifier = '"';
-//				    }
-//				    sb = null;
-//				    
-//		    		// Write the data, resultsTableModel.getRowCount() may
-//		    		// change if not all results are cached, so make the
-//		    		// method call each time.
-//				    for (int i = 0; i < resultsTableModel.getRowCount(); i++) {
-//						// Make sure the row really does exist.  See
-//						// ResultSetTableModel for reasons.
-//						obj = resultsTableModel.getValueAt(i, 0);
-//						if (i < resultsTableModel.getRowCount()) {
-//						    for (int j = 0; j < columns; j++) {
-//								obj = resultsTableModel.getValueAt(i, j,true);
-//								if (j == 0) {
-//									// If we are writing SQL INSERT statements,
-//									// there will be characters written to
-//									// file.  Otherwise, we're passing in a
-//									// zero length string and do not write
-//									// anything.
-//									outFile.write(sql);
-//								} else {
-//								    outFile.write(',');
-//								}
-//								if (obj == null) {
-//									if (sql.length() > 0) {
-//										outFile.write("NULL");
-//									}
-//								} else {
-//									switch (resultsTableModel.getColumnType(j)) {
-//										case Types.BIGINT:
-//										case Types.BIT:
-//										case Types.DECIMAL:
-//										case Types.DOUBLE:
-//										case Types.FLOAT:
-//										case Types.INTEGER:
-//										case Types.NUMERIC:
-//										case Types.REAL:
-//										case Types.SMALLINT:
-//										case Types.TINYINT:
-//											outFile.write(obj.toString());
-//											break;
-//										case Types.CHAR:
-//										case Types.LONGVARCHAR:
-//										case Types.VARCHAR:									
-//										    outFile.write(StringUtil.quotedString(obj.toString(), quoteIdentifier, quoteEsc));
-//										    break;
-//										case Types.DATE:
-//										case Types.TIME:
-//										case Types.TIMESTAMP:
-//											outFile.write(StringUtil.quotedString(obj.toString(), quoteIdentifier, quoteEsc));
-//											break;
-//										default:
-//											outFile.write(StringUtil.quotedString(obj.toString(), quoteIdentifier, quoteEsc));
-//									}
-//								}
-//						    }
-//						    if (sql.length() > 0) {
-//						    	// End the SQL INSERT statement.
-//						    	outFile.write(");");
-//						    }
-//							outFile.write('\n');
-//						}
-//				    }
-//				    outFile.close();
-//				    setMessage("Results saved to " + file.getName() + ".", false);
-//					notifyStatusListeners
-//						(new StatusEvent(this, StatusTypeEnum.NOT_BUSY));
-//				    setCursor
-//						(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-//				} // if (response == JOptionPane.YES_OPTION)
-//		    } // if (response == JFileChooser.APPROVE_OPTION)
-//		} catch (Throwable t) {
-//			notifyStatusListeners
-//				(new StatusEvent(this, StatusTypeEnum.NOT_BUSY));
-//			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-//			handleException(t);	
-//		}
 	}
 
 	/**
@@ -1574,13 +1355,9 @@ public class ConnectionPanel
 	 */
 	public void setDefaultButtonForRootPanel(JRootPane rootPane)
 	{
-//		if (sPane.getTopComponent() == loginPane) {
-			// If the loginPane is not displayed, it will not recieve the
-			// default keystroke.
-			loginPane.setDefaultButtonForRootPanel(rootPane);
-//		} else {
-//			rootPane.setDefaultButton(null);
-//		}
+		// If the loginPane is not displayed, it will not recieve the
+		// default keystroke.
+		loginPane.setDefaultButtonForRootPanel(rootPane);
 	}
 
 	/**
@@ -1623,7 +1400,7 @@ public class ConnectionPanel
 		db = null;
     }
 
-	public void sqlExceptionThrown(StatusEvent se)
+	public void sqlExceptionThrown(Throwable t)
 	{
 		// An error was encountered running the statement.
 		// Display the error.
@@ -1631,45 +1408,65 @@ public class ConnectionPanel
 			provideErrorFeedback(msgArea);
 		StringBuffer executeMsg = new StringBuffer("ERROR: ");
 		executeMsg.append
-			(((Throwable)se.getData()).getMessage());
+			(t.getMessage());
 		setMessage(executeMsg.toString(), true);
-		Debug.log(((Throwable)se.getData()).getMessage());
+		Debug.log(t.getMessage());
 	}
 
 	public void sqlExecuted(StatusEvent se) {
 		// This is the result of an SQL statement being run.  Display the results.
 		SQLExecutionWorker worker = (SQLExecutionWorker)se.getSource();
+		SQLExecutionResults results = (SQLExecutionResults)worker.get();
 		StringBuffer executeMsg = new StringBuffer
 				("SQL statement has been executed.  Execution time ");
-		executeMsg.append(formatExecuteTime(worker.getRunTime()));
+		executeMsg.append(formatExecuteTime(results.getRunTimeMills()));
 		executeMsg.append('.');
-		if (se.getData() instanceof ResultSetTableModel) {
-			this.results.setModel((ResultSetTableModel)se.getData());
+
+		int count = results.getResultSetModelList().size();
+		
+		// Delete any unneeded ResultSetPanels.  Always leave the first panel
+		// and the last component, which will be the script output panel.
+		while (outputTabbedPane.getComponentCount() > 2 && (outputTabbedPane.getComponentCount() - 1) < count) {
+			outputTabbedPane.remove(1);
+		}
+		
+		if (count == 0) {
+			((ResultSetPanel)outputTabbedPane.getComponentAt(0)).setResultSetTableModel(null);
 			executeMsg.append("  ");
-			executeMsg.append(getResultSetTableModel().getCachedRowCount());
-			if (getResultSetTableModel().getCacheFull()) {
-				executeMsg.append(" rows returned.");
-			} else {
-				executeMsg.append(" rows cached.");
-			}
-		} else if(se.getData() instanceof Integer) {
-			try {
-				getResultSetTableModel().setResultSet(null);
-			} catch (SQLException e) {
-				// Such an exception will not be thrown in this case.
-			}
-			executeMsg.append("  ");
-			executeMsg.append(se.getData().toString());
+			executeMsg.append(results.getResultCount());
 			executeMsg.append(" records affected.");
+		} else {
+			// Add any needed ResultSetPanels.  Make sure that the last component
+			// is the script output panel.
+			for (int i = outputTabbedPane.getComponentCount(); i < count; i++) {
+				outputTabbedPane.add(new ResultSetPanel(), RESULTS_TAB_PREFIX + String.valueOf(i), i - 1);
+			}
+			
+			// Set resultset models
+			List list = results.getResultSetModelList();
+			for (int i = 0; i < count; i++) {
+				((ResultSetPanel)outputTabbedPane.getComponentAt(0)).setResultSetTableModel((ResultSetTableModel)list.get(i));
+			}
+		}
+		
+		for (Iterator iter = results.getExceptionList().iterator(); iter.hasNext(); ) {
+			executeMsg.append('\n');
+			executeMsg.append(((Throwable)iter.next()).getMessage());
 		}
 		
 		setMessage(executeMsg.toString(), false);
+		
+		if (results.getExceptionList().size() > 0) {
+			UIManager.getLookAndFeel().provideErrorFeedback(msgArea);
+		}
 	
 		// Add the latest statement to the list and set it as the
 		// selected one.
 		historyList.addStatement(worker.getSQL());
-		historySelection.setSelectionInterval(historyList.getSize() - 1,
-											  historyList.getSize() - 1);
+		historySelection.setSelectionInterval(
+				historyList.getSize() - 1,
+				historyList.getSize() - 1
+			);
 	}
 
 	/**
@@ -1682,7 +1479,7 @@ public class ConnectionPanel
     		if (se.getType() == StatusTypeEnum.NOT_BUSY) {
 	    		try {
 					if (se.getData() instanceof Throwable) {
-						sqlExceptionThrown(se);
+						sqlExceptionThrown((Throwable)se.getData());
 					} else if (sqlExecutionWorker.isCancelled()) {
 						setMessage("SQL statement has been cancelled.", false);
 					} else {
