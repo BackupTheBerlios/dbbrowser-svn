@@ -24,6 +24,8 @@ package us.pcsw.dbbrowser.swing;
 import us.pcsw.dbbrowser.HistoryListModel;
 import us.pcsw.dbbrowser.Preferences;
 import us.pcsw.dbbrowser.ResultSetTableModel;
+import us.pcsw.dbbrowser.SQLExecutionResults;
+import us.pcsw.dbbrowser.SQLExecutionWorker;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -1426,27 +1428,30 @@ public class ConnectionPanel
 		
 		// Delete any unneeded ResultSetPanels.  Always leave the first panel
 		// and the last component, which will be the script output panel.
-		while (outputTabbedPane.getComponentCount() > 2 && (outputTabbedPane.getComponentCount() - 1) < count) {
-			outputTabbedPane.remove(1);
+		while (outputTabbedPane.getComponentCount() > 2 && (outputTabbedPane.getComponentCount() - 1) > count) {
+			outputTabbedPane.remove(outputTabbedPane.getComponentCount() - 2);
 		}
 		
 		if (count == 0) {
 			((ResultSetPanel)outputTabbedPane.getComponentAt(0)).setResultSetTableModel(null);
-			executeMsg.append("  ");
-			executeMsg.append(results.getResultCount());
-			executeMsg.append(" records affected.");
 		} else {
 			// Add any needed ResultSetPanels.  Make sure that the last component
 			// is the script output panel.
-			for (int i = outputTabbedPane.getComponentCount(); i < count; i++) {
+			for (int i = outputTabbedPane.getComponentCount(); i < count + 1; i++) {
 				outputTabbedPane.add(new ResultSetPanel(), RESULTS_TAB_PREFIX + String.valueOf(i), i - 1);
 			}
 			
 			// Set resultset models
 			List list = results.getResultSetModelList();
 			for (int i = 0; i < count; i++) {
-				((ResultSetPanel)outputTabbedPane.getComponentAt(0)).setResultSetTableModel((ResultSetTableModel)list.get(i));
+				((ResultSetPanel)outputTabbedPane.getComponentAt(i)).setResultSetTableModel((ResultSetTableModel)list.get(i));
 			}
+		}
+
+		for (Iterator iter = results.getResultCountList().iterator(); iter.hasNext(); ) {
+			executeMsg.append('\n');
+			executeMsg.append(iter.next().toString());
+			executeMsg.append(" records affected.");
 		}
 		
 		for (Iterator iter = results.getExceptionList().iterator(); iter.hasNext(); ) {

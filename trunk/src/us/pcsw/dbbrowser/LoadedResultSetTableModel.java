@@ -33,6 +33,7 @@ public final class LoadedResultSetTableModel extends ResultSetTableModel
 	public LoadedResultSetTableModel()
 	{
 		super();
+		data = new ArrayList();
 	}
 
 	/**
@@ -48,7 +49,7 @@ public final class LoadedResultSetTableModel extends ResultSetTableModel
 	
 	// A list of Object arrays.  Each Object array is a row.  Each array
 	// element is a cell.
-	private List data = new ArrayList();
+	private List data;
 	
 	/**
 	 * @see us.pcsw.dbbrowser.ResultSetTableModel#getValueAt(int, int, boolean)
@@ -82,7 +83,11 @@ public final class LoadedResultSetTableModel extends ResultSetTableModel
 		Object[] row = null;
 		int colCount = getColumnCount();
 
-		data.clear();
+		if (data == null) {
+			data = new ArrayList();
+		} else {
+			data.clear();
+		}
 		while (rs.next()) {
 			row = new Object[colCount];
 			for (int i = 0; i < colCount; i++) {
@@ -91,6 +96,7 @@ public final class LoadedResultSetTableModel extends ResultSetTableModel
 					row[i] = null;
 				}
 			}
+			data.add(row);
 		}
 	}
 

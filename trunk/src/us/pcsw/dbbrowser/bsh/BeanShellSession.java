@@ -19,76 +19,31 @@
  *                    51 Franklin Street, Fifth Floor
  *                      Boston, MA  02110-1301, USA.
  */
-package us.pcsw.dbbrowser.swing;
-
-import java.util.LinkedList;
-import java.util.List;
+package us.pcsw.dbbrowser.bsh;
 
 /**
- * us.pcsw.dbbrowser.swing.SQLExecutionResults
+ * us.pcsw.dbbrowser.bsh.BeanShellSession
  * -
- * An object that contains all the results of running SQL Statements.  This is
- * the output of the SQLExcecurtionWorker.
+ * A token object that can be used by the DBBrowser beanshell command objects
+ * differentiate between different sessions.
  *
  * <P><STRONG>Revision History:</STRONG><UL>
- * <LI>Feb 16, 2006 This class was created by pchapman.</LI>
+ * <LI>Feb 17, 2006 This class was created by pchapman.</LI>
  * </UL></P>
  *
  * @author pchapman
  */
-class SQLExecutionResults
+public class BeanShellSession
 {
 	// CONSTRUCTORS
 	
-	/**
-	 * Creates a new instance.
-	 */
-	public SQLExecutionResults()
+	public BeanShellSession()
 	{
 		super();
-		exceptionList = new LinkedList();
-		resultSetModelList = new LinkedList();
+		// TODO Auto-generated constructor stub
 	}
 
 	// MEMBERS
-	
-	private List exceptionList;
-	
-	List getExceptionList()
-	{
-		return exceptionList;
-	}
-	
-	private int resultCount;
-	
-	public int getResultCount()
-	{
-		return resultCount;
-	}
-	
-	void setResultCount(int count)
-	{
-		this.resultCount = count;
-	}
-	
-	private List resultSetModelList;
-	
-	List getResultSetModelList()
-	{
-		return resultSetModelList;
-	}
-	
-	private long runTimeMills;
-	
-	long getRunTimeMills()
-	{
-		return runTimeMills;
-	}
-	
-	void setRunTimeMills(long runTimeMills)
-	{
-		this.runTimeMills = runTimeMills;
-	}
 	
 	// METHODS
 }

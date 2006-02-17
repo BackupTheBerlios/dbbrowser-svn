@@ -19,7 +19,7 @@
  *                    51 Franklin Street, Fifth Floor
  *                      Boston, MA  02110-1301, USA.
  */
-package us.pcsw.dbbrowser.swing;
+package us.pcsw.dbbrowser;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -33,9 +33,7 @@ import java.util.Vector;
 
 import javax.swing.SwingUtilities;
 
-import us.pcsw.dbbrowser.CachingResultSetTableModel;
 
-import us.pcsw.dbbrowser.ResultSetTableModel;
 
 import us.pcsw.dbbrowser.event.StatusEvent;
 import us.pcsw.dbbrowser.event.StatusListener;
@@ -54,7 +52,7 @@ import us.pcsw.swing.SwingWorker;
  *                   executed. </LI>
  * </UL></P>
  */
-final class SQLExecutionWorker extends SwingWorker
+public final class SQLExecutionWorker extends SwingWorker
 {
 	/**
 	 * Indicates that the query is being cancelled so that the user is not
@@ -143,23 +141,35 @@ final class SQLExecutionWorker extends SwingWorker
 			stmt.execute(getSQL());
 			execResults.setRunTimeMills(new Date().getTime() - time);
 			notifyStatusListeners(new StatusEvent(this, StatusTypeEnum.QUERY_ENDED));
+
 			ResultSet rs = null;
+			boolean handleMultipleResults = Preferences.getCachePageSize() < 1;
 			int count = stmt.getUpdateCount();
-			if (count == -1) {
-			// The following code is commented out because though it would
-			// allow multiple resultsets to be returned, it would mean that
-			// CachingResultSetTableModels could not be used.
-//			do {
-				rs = stmt.getResultSet();
-				if (rs != null) {
-					ResultSetTableModel rstm = new CachingResultSetTableModel(rs);
+			boolean hasMoreResults;
+			do {
+				if (count == -1) {
+					// We have a resultset
+					rs = stmt.getResultSet();
+					ResultSetTableModel rstm = null;
+					if (handleMultipleResults) {
+						rstm = new LoadedResultSetTableModel(rs);
+					} else {
+						rstm = new CachingResultSetTableModel(rs);
+					}
 					rstm.getValueAt(0,0); // Initialize the cache
 					execResults.getResultSetModelList().add(rstm);
+				} else {
+					// We have update results
+					execResults.getResultCountList().add(Integer.valueOf(count));
 				}
-//			} while (stmt.getMoreResults() && stmt.getUpdateCount() == -1);
-			} else {
-				execResults.setResultCount(count);
-			}
+				// The order of stmt.getMoreResults(), then
+				// stmt.getUpdateCount() is crucial.
+				hasMoreResults = stmt.getMoreResults();
+				count = stmt.getUpdateCount();
+			} while (
+					handleMultipleResults &&
+					(hasMoreResults || count > -1)
+				);
 		} catch (SQLException e) {
 			// Don't report the error if the statement is being cancelled.
 			if (cancel) {
