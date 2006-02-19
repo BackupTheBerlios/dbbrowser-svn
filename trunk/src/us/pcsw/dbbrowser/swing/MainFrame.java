@@ -156,7 +156,6 @@ public class MainFrame
 		connectionCloneConnection,
 		connectionCloseConnection,
 		connectionDisconnect,
-		connectionExit,
 		connectionImportData,
 		connectionNewConnection,
 		connectionSaveConnection;
@@ -168,6 +167,7 @@ public class MainFrame
     private JMenu stmt;
     private JMenuItem
     	stmtExec,
+		stmtExit,
 		stmtOpenSQL,
 		stmtSaveSQL,
 		stmtSaveResult,
@@ -186,7 +186,7 @@ public class MainFrame
 //		helpContents,
 		helpDBBrowserHelp,
 		helpAbout,
-		helpChangeList,
+		helpIndex,
 		helpCheckForNewVersion,
 		helpReportABug,
 		helpSystemInfo;
@@ -341,7 +341,7 @@ public class MainFrame
 		    	saveConnectionInfo();
 		    } else if (source.equals(stmtOpenSQL) ||
 		                source.equals(toolbarOpenSQL)) {
-				loadSQL();
+				loadFile();
 		    } else if (source.equals(stmtSaveResult) ||
 			            source.equals(toolbarSaveResult))
 		    {
@@ -349,16 +349,16 @@ public class MainFrame
 		    } else if (source.equals(stmtSaveSQL) ||
 			            source.equals(toolbarSaveSQL))
 		    {
-				saveSQL();
+				saveFile();
 		    } else if (source.equals(viewViewDBObjects) ||
 			            source.equals(toolbarViewObjects)) {
 				viewDBObjects();
-		    } else if (source.equals(connectionExit)) {
+		    } else if (source.equals(stmtExit)) {
 				exitApp(0);
 		    } else if (source.equals(helpAbout)) {
 				showHelpAbout();
-		    } else if (source.equals(helpChangeList)) {
-		    	showHelpChangeList();
+		    } else if (source.equals(helpIndex)) {
+		    	showHelpIndex();
 		    } else if (source.equals(helpReportABug)) {
 		    	showHelpReportABug();
 			} else if (source.equals(helpCheckForNewVersion)) {
@@ -376,7 +376,7 @@ public class MainFrame
 		    } else if (source.equals(stmtClear)) {
 				getSelectedConnectionPanel().historyClear();
 		    } else if (source.equals(stmtExec)) {
-		    	getSelectedConnectionPanel().executeStatement();
+		    	getSelectedConnectionPanel().executeScript();
 		    } else if (source.equals(stmtNext)) {
 				getSelectedConnectionPanel().historyNext();
 		    } else if (source.equals(stmtPrev)) {
@@ -434,6 +434,7 @@ public class MainFrame
 			return null;
 		} else {
 			ConnectionPanel cp = new ConnectionPanel(provider);
+			cp.addChangeListener(this);
 			cp.addStatusListener(this);
 			conTab.addTab(cp.getTitle(), cp);
 			renumberTabs();
@@ -515,141 +516,9 @@ public class MainFrame
 
 		// Menus
 		JMenuBar menuBar = new JMenuBar();
-
-		connection = new JMenu("Connection");
-		connection.setMnemonic('C'); 
 		
-		// New
-		connectionNewConnection = new JMenuItem("New");
-		connectionNewConnection.setMnemonic('N');
-        // Added by Garrett Baker 2003-03-13
-		connectionNewConnection.setAccelerator
-			(KeyStroke.getKeyStroke('N', modifier, false));
-        // End Added
-		connectionNewConnection.addActionListener(this);
-		connection.add(connectionNewConnection);
-		
-		// Close
-		connectionCloseConnection = new JMenuItem("Close");
-		connectionCloseConnection.setMnemonic('C');
-		// End Added
-		connectionCloseConnection.addActionListener(this);
-		connection.add(connectionCloseConnection);
-		
-		//Disconnect
-		connectionDisconnect = new JMenuItem("Disconnect");
-		connectionDisconnect.setMnemonic('D');
-		connectionDisconnect.setAccelerator
-			(KeyStroke.getKeyStroke('D', modifier, false));
-		connectionDisconnect.addActionListener(this);
-		connection.add(connectionDisconnect);
-		
-		connection.addSeparator();
-		
-		// Save
-		connectionSaveConnection = new JMenuItem("Save");
-		connectionSaveConnection.setMnemonic('S');
-		connectionSaveConnection.addActionListener(this);
-		connection.add(connectionSaveConnection);
-
-		connection.addSeparator();
-		
-		// Clone
-		connectionCloneConnection = new JMenuItem("Clone");
-		connectionCloneConnection.setMnemonic('l');
-		// Added by Garrett Baker 2003-03-13
-		connectionCloneConnection.setAccelerator
-			(KeyStroke.getKeyStroke('L', modifier, false));
-		// End Added
-		connectionCloneConnection.addActionListener(this);
-		connection.add(connectionCloneConnection);
-
-		connection.addSeparator();
-		
-		// Data Import
-		connectionImportData = new JMenuItem("Import Data...");
-		connectionImportData.setMnemonic('I');
-		// Added by Garrett Baker 2003-03-13
-		connectionImportData.setAccelerator
-			(KeyStroke.getKeyStroke('I', modifier, false));
-		// End Added
-		connectionImportData.addActionListener(this);
-		connection.add(connectionImportData);
-
-		// Added by Garrett Baker 2003-03-13
-		// The Mac doesn't have an Exit menu item on the File menu.
-        if (!isMac) {
-			connection.addSeparator();
-        	
-			connectionExit = new JMenuItem("Exit");
-			connectionExit.setMnemonic('x');
-			connectionExit.setAccelerator
-				(KeyStroke.getKeyStroke('Q', modifier, false));
-			connectionExit.addActionListener(this);
-			connection.add(connectionExit);
-        }
-		// End Added
-		
-		menuBar.add(connection);
-
-		edit = new JMenu("Edit");
-		edit.setMnemonic('E');
-/*
-		editUndo = new JMenuItem("Undo (Ctrl+Z)");
-		editUndo.setMnemonic('U');
-		editUndo.addActionListener(this);
-		edit.add(editUndo);
-		
-		editRedo = new JMenuItem("Redo (Ctrl+Y)");
-		editRedo.setMnemonic('R');
-		editRedo.addActionListener(this);
-		edit.add(editRedo);
-		
-		edit.addSeparator();
-
-		editCut = new JMenuItem("Cut (Ctrl+X");
-		editCut.setMnemonic('t');
-		editCut.addActionListener(this);
-		edit.add(editCut);
-
-		editCopy = new JMenuItem("Copy (Ctrl+C)");
-		editCopy.setMnemonic('C');
-		editCopy.addActionListener(this);
-		edit.add(editCopy);
-
-		editPaste = new JMenuItem("Paste (Ctrl+V)");
-		editPaste.setMnemonic('P');
-		editPaste.addActionListener(this);
-		edit.add(editPaste);
-
-		edit.addSeparator();
-*/
-		editReplace = new JMenuItem("Find and Replace");
-		editReplace.setMnemonic('F');
-		// Added by Garrett Baker 2003-03-13
-		editReplace.setAccelerator
-			(KeyStroke.getKeyStroke('F', modifier, false));
-		// End Added
-		editReplace.addActionListener(this);
-		edit.add(editReplace);
-		
-		// Added by Garrett Baker 2003-03-13
-		if (!isMac) {
-			edit.addSeparator();
-			
-			editPreferences = new JMenuItem("Preferences");
-			editPreferences.setMnemonic('P');
-			editPreferences.addActionListener(this);
-			edit.add(editPreferences);
-		} else {
-			new DBBrowserAppListener(this);
-		}
-		// End Added
-		
-		menuBar.add(edit);
-	
-		stmt = new JMenu("Statement");
-		stmt.setMnemonic('S');
+		stmt = new JMenu("File");
+		stmt.setMnemonic('F');
 		
 		stmtExec = new JMenuItem("Execute");
 		stmtExec.setMnemonic('x');
@@ -664,7 +533,7 @@ public class MainFrame
 		
 		// Added by Garrett Baker 2003-03-19
 		// Open SQL
-		stmtOpenSQL = new JMenuItem("Open SQL...");	
+		stmtOpenSQL = new JMenuItem("Open File...");	
 		stmtOpenSQL.setMnemonic('O');
 		// Added by Garrett Baker 2003-03-13
 		stmtOpenSQL.setAccelerator
@@ -674,7 +543,7 @@ public class MainFrame
 		stmt.add(stmtOpenSQL);
 
 		// Save SQL
-		stmtSaveSQL = new JMenuItem("Save SQL...");
+		stmtSaveSQL = new JMenuItem("Save File...");
 		stmtSaveSQL.setMnemonic('S');
 		// Added by Garrett Baker 2003-03-13
 		stmtSaveSQL.setAccelerator
@@ -745,8 +614,138 @@ public class MainFrame
 		stmtClear.setMnemonic('l');
 		stmtClear.addActionListener(this);
 		stmt.add(stmtClear);
+
+		// The Mac doesn't have an Exit menu item on the File menu.
+        if (!isMac) {
+			stmt.addSeparator();
+        	
+			stmtExit = new JMenuItem("Exit");
+			stmtExit.setMnemonic('x');
+			stmtExit.setAccelerator
+				(KeyStroke.getKeyStroke('Q', modifier, false));
+			stmtExit.addActionListener(this);
+			stmt.add(stmtExit);
+        }
 	
 		menuBar.add(stmt);
+
+		connection = new JMenu("Connection");
+		connection.setMnemonic('C'); 
+		
+		// New
+		connectionNewConnection = new JMenuItem("New");
+		connectionNewConnection.setMnemonic('N');
+        // Added by Garrett Baker 2003-03-13
+		connectionNewConnection.setAccelerator
+			(KeyStroke.getKeyStroke('N', modifier, false));
+        // End Added
+		connectionNewConnection.addActionListener(this);
+		connection.add(connectionNewConnection);
+		
+		// Close
+		connectionCloseConnection = new JMenuItem("Close");
+		connectionCloseConnection.setMnemonic('C');
+		// End Added
+		connectionCloseConnection.addActionListener(this);
+		connection.add(connectionCloseConnection);
+		
+		//Disconnect
+		connectionDisconnect = new JMenuItem("Disconnect");
+		connectionDisconnect.setMnemonic('D');
+		connectionDisconnect.setAccelerator
+			(KeyStroke.getKeyStroke('D', modifier, false));
+		connectionDisconnect.addActionListener(this);
+		connection.add(connectionDisconnect);
+		
+		connection.addSeparator();
+		
+		// Save
+		connectionSaveConnection = new JMenuItem("Save");
+		connectionSaveConnection.setMnemonic('S');
+		connectionSaveConnection.addActionListener(this);
+		connection.add(connectionSaveConnection);
+
+		connection.addSeparator();
+		
+		// Clone
+		connectionCloneConnection = new JMenuItem("Clone");
+		connectionCloneConnection.setMnemonic('l');
+		// Added by Garrett Baker 2003-03-13
+		connectionCloneConnection.setAccelerator
+			(KeyStroke.getKeyStroke('L', modifier, false));
+		// End Added
+		connectionCloneConnection.addActionListener(this);
+		connection.add(connectionCloneConnection);
+
+		connection.addSeparator();
+		
+		// Data Import
+		connectionImportData = new JMenuItem("Import Data...");
+		connectionImportData.setMnemonic('I');
+		// Added by Garrett Baker 2003-03-13
+		connectionImportData.setAccelerator
+			(KeyStroke.getKeyStroke('I', modifier, false));
+		// End Added
+		connectionImportData.addActionListener(this);
+		connection.add(connectionImportData);
+		
+		menuBar.add(connection);
+
+		edit = new JMenu("Edit");
+		edit.setMnemonic('E');
+/*
+		editUndo = new JMenuItem("Undo (Ctrl+Z)");
+		editUndo.setMnemonic('U');
+		editUndo.addActionListener(this);
+		edit.add(editUndo);
+		
+		editRedo = new JMenuItem("Redo (Ctrl+Y)");
+		editRedo.setMnemonic('R');
+		editRedo.addActionListener(this);
+		edit.add(editRedo);
+		
+		edit.addSeparator();
+
+		editCut = new JMenuItem("Cut (Ctrl+X");
+		editCut.setMnemonic('t');
+		editCut.addActionListener(this);
+		edit.add(editCut);
+
+		editCopy = new JMenuItem("Copy (Ctrl+C)");
+		editCopy.setMnemonic('C');
+		editCopy.addActionListener(this);
+		edit.add(editCopy);
+
+		editPaste = new JMenuItem("Paste (Ctrl+V)");
+		editPaste.setMnemonic('P');
+		editPaste.addActionListener(this);
+		edit.add(editPaste);
+
+		edit.addSeparator();
+*/
+		editReplace = new JMenuItem("Find and Replace");
+		editReplace.setMnemonic('F');
+		// Added by Garrett Baker 2003-03-13
+		editReplace.setAccelerator
+			(KeyStroke.getKeyStroke('F', modifier, false));
+		// End Added
+		editReplace.addActionListener(this);
+		edit.add(editReplace);
+		
+		// Added by Garrett Baker 2003-03-13
+		if (!isMac) {
+			edit.addSeparator();
+			
+			editPreferences = new JMenuItem("Preferences");
+			editPreferences.setMnemonic('P');
+			editPreferences.addActionListener(this);
+			edit.add(editPreferences);
+		} else {
+			new DBBrowserAppListener(this);
+		}
+		// End Added
+		
+		menuBar.add(edit);
 		
 		view = new JMenu("View");
 		view.setMnemonic('V');
@@ -773,28 +772,27 @@ public class MainFrame
 	
 		help = new JMenu("Help");
 		help.setMnemonic('H');
-	
-		// Added by Garrett Baker 2003-03-13
+		
 		if (!isMac) {
+			helpIndex = new JMenuItem("Index...");
+			helpIndex.setMnemonic('I');
+			helpIndex.addActionListener(this);
+			helpIndex.setAccelerator
+				(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0, false));
+			help.add(helpIndex);
+
 			helpAbout = new JMenuItem("About...");
 			helpAbout.setMnemonic('A');
-			helpAbout.setAccelerator
-						(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0, false));
 			helpAbout.addActionListener(this);
 			help.add(helpAbout);
 		} else {
 			helpDBBrowserHelp = new JMenuItem("DBBrowser Help...");
+			helpDBBrowserHelp.addActionListener(this);
 			helpDBBrowserHelp.setAccelerator
 				(KeyStroke.getKeyStroke('H', modifier, false));
-			helpDBBrowserHelp.addActionListener(this);
 			help.add(helpDBBrowserHelp);
 		}
-		
-		helpChangeList = new JMenuItem("Change List...");
-		helpChangeList.setMnemonic('C');
-		helpChangeList.addActionListener(this);
-		help.add(helpChangeList);
-		
+	
 //		help.addSeparator();
 //		
 //		helpReportABug = new JMenuItem("Bug Report/Feature Request");
@@ -881,9 +879,9 @@ public class MainFrame
 		// Open SQL button
 		icon = new ImageIcon(getClass().getClassLoader().getResource
 					("us/pcsw/dbbrowser/resources/images/OpenSQL.png"));
-		toolbarOpenSQL = new ToolbarButton("Open SQL", icon);
+		toolbarOpenSQL = new ToolbarButton("Open File", icon);
 		toolbarOpenSQL.setBorderPainted(false);
-		toolbarOpenSQL.setToolTipText("Open SQL file into Frontmost Tab");
+		toolbarOpenSQL.setToolTipText("Open SQL/Script into Frontmost Tab");
 //		toolbarOpenSQL.setDisabledIcon(disabledIcon);
 		toolbarOpenSQL.setVerticalTextPosition(SwingConstants.BOTTOM);
 		toolbarOpenSQL.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -894,9 +892,9 @@ public class MainFrame
 		// Save SQL button
 		icon = new ImageIcon(getClass().getClassLoader().getResource
 					("us/pcsw/dbbrowser/resources/images/SaveSQL.png"));
-		toolbarSaveSQL = new ToolbarButton("Save SQL", icon);
+		toolbarSaveSQL = new ToolbarButton("Save File", icon);
 		toolbarSaveSQL.setBorderPainted(false);
-		toolbarSaveSQL.setToolTipText("Save Frontmost Tab's SQL");
+		toolbarSaveSQL.setToolTipText("Save Frontmost Tab's SQL/Script");
 //		toolbarSaveSQL.setDisabledIcon(disabledIcon);
 		toolbarSaveSQL.setVerticalTextPosition(SwingConstants.BOTTOM);
 		toolbarSaveSQL.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -943,10 +941,10 @@ public class MainFrame
 	/**
 	 * Causes the currently selected tab to load an SQL script from a file.
 	 */
-	private void loadSQL()
+	private void loadFile()
 	{
 		try {
-			getSelectedConnectionPanel().loadSQLStatement();
+			getSelectedConnectionPanel().loadFile();
 		} catch (java.lang.Throwable e) {
 			handleException(e);
 		}
@@ -957,6 +955,7 @@ public class MainFrame
 		boolean connected = false;
 		boolean history = false;
 		boolean results = false;
+		boolean scriptOutput = false;
 		boolean sqlStmt = false;
 		boolean stmtExecuting = false;
 
@@ -965,7 +964,8 @@ public class MainFrame
 			connected = cp.isConnected();
 			history = connected && cp.hasHistory();
 			results = connected && cp.hasResultSet();
-			sqlStmt = connected && cp.getSQLText().length() > 0;
+			scriptOutput = connected && cp.hasScriptOutput();
+			sqlStmt = connected && cp.getScriptText().length() > 0;
 			stmtExecuting = connected && cp.isStatementExecuting();
 		}
 		connectionCloseConnection.setEnabled(cp != null);
@@ -988,8 +988,20 @@ public class MainFrame
 		toolbarOpenSQL.setEnabled(connected);
 		stmtSaveSQL.setEnabled(sqlStmt);
 		toolbarSaveSQL.setEnabled(sqlStmt);
-		stmtSaveResult.setEnabled(results);
-		toolbarSaveResult.setEnabled(results);
+		if (results) {
+			stmtSaveResult.setText("Save Result...");
+			stmtSaveResult.setEnabled(true);
+			toolbarSaveResult.setText("Save Result");
+			toolbarSaveResult.setEnabled(true);
+		} else if (scriptOutput) {
+			stmtSaveResult.setText("Save Output...");
+			stmtSaveResult.setEnabled(true);
+			toolbarSaveResult.setText("Save Output");
+			toolbarSaveResult.setEnabled(true);
+		} else {
+			stmtSaveResult.setEnabled(false);
+			toolbarSaveResult.setEnabled(false);
+		}
 		stmtPrintSQL.setEnabled(false);    // setEnabled.(sqlStmt);
 		stmtPrintResult.setEnabled(false); // setEnabled.(results);
 		stmtPrev.setEnabled(history);
@@ -1116,10 +1128,10 @@ public class MainFrame
 	/**
 	 * Causes the currently selected tab to save it's SQL statment(s) to file.
 	 */
-	private void saveSQL()
+	private void saveFile()
 	{
 		try {
-			getSelectedConnectionPanel().saveSQLStatement();
+			getSelectedConnectionPanel().saveFile();
 		} catch (java.lang.Throwable e) {
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			handleException(e);
@@ -1143,13 +1155,13 @@ public class MainFrame
 		}
 	}
 	
-	private void showHelpChangeList()
+	private void showHelpIndex()
 	{
 		try {
 			URL licenseURL = getClass().getClassLoader().getResource
-				("us/pcsw/dbbrowser/resources/changelist.html");
+				("us/pcsw/dbbrowser/resources/index.html");
 			HTMLDialog hd =
-				new HTMLDialog(this, false, licenseURL, "DB Browser Change List");
+				new HTMLDialog(this, false, licenseURL, "DB Browser Help");
 			hd.setVisible(true);
 		} catch (java.lang.Throwable e) {
 			handleException(e);

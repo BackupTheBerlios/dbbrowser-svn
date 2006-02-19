@@ -1,0 +1,222 @@
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<title>DBBrowser - Scripting with BeanShell</title>
+	</head>
+	<body>
+		<center><a name="top"<h1>Scripting with BeanShell</h1></a></center>
+		<center><a name="index"><h2>Index</h2></a></center>
+		<ul>
+			<li><a href="#what">What Is BeanShell Scripting</a></li>
+			<li><a href="#why">Why Use BeanShell Scripting</a></li>
+			<li><a href="#how">How to Use BeanShell Scripting</a>
+				<ul>
+					<li><a href="#variables">Variables</a></li>
+					<li><a href="#commands">Commands</a></li>
+					<li><a href="#examples">Examples</a></li>
+				</ul>
+			</li>
+		</ul>
+		<center><a name="what"><h2>What Is BeanShell Scripting</h2></a></center>
+		<p>
+			As of version 1.6.0, DBBrowser supports scripting using the
+			<a href="http://beanshell.org">BeanShell</a> scripting engine.
+			Beanshell is a scripting language based on Java.  Since it is
+			based on Java (and runs in Java) it supports Objects.  Another
+			feature that can make writing scripts quick and simple is loose
+			typing.  Although strict typing and variable declaration is in
+			BeanShell, it is not required.  All language constructs available
+			to Java developers are available in the BeanShell language.
+		</p>
+		<p>
+			Anyone wishing to use scripting in DBBrowser should read the
+			BeanShell documentation at
+			<a href="http://beanshell.org/docs.html">
+				http://beanshell.org/docs.html
+			</a> in order to learn the scripting syntax.  The user's manual
+			is well written and should be easy for most users to pick up.
+			This is especially true if you already know java as BeanShell is
+			based on java syntax.
+		</p>
+		<a href="#top">Back to the Top</a>
+		<center><a name="why"><h2>Why Use BeanShell Scripting</h2></a></center>
+		<p>
+			Some database systems systems have extended SQL syntax that will
+			allow developers to create scripts that include such useful
+			language structures such as looping, decisions (if statements) and
+			output.  Such an engine is MS SQL server.  Others, like
+			PostgreSQL, have such constructs from within functions, but they
+			can not be used for ad-hoc query statements such as one would run
+			in DBBrowser.  Now that BeanShell scripting is provided in
+			DBBrowser, you have that functionallity for any database which you
+			can connect to with DBBrowser.  Imagine being able to run a query,
+			inspect the results, make a decision based on those results, then
+			selected another set of results to display (maybe even using the
+			results of the first query in the construction of the second
+			query).  Yes, it is true that such things can often be done using
+			subselects and the smart use of joins.  However, this is only an
+			example.  The complexity of the script is limited only by your own
+			imagination.  You can create ad-hoc scripts that are just as
+			complex as you wish.
+		</p>
+		<p>
+			Another use for BeanShell scripting in DBBrowser is for exploring
+			and testing JDBC drivers interactively.  Developers that are just
+			starting with Java can use DBBrowser to interactively use jdbc
+			commands and explore the library.  JDBC driver developers could
+			use this functionallity to test their driver's capabilities.
+		</p>
+		<p>
+			In a future version, I hope to add an <i>export</i> feature that
+			will create a BeanShell script that can be run from the command
+			line outside of the DBBrowser application.  Functionallity
+			provided by DBBrowser to the BeanShell environment would be
+			emulated so that any script run from within DBBrowser could be run
+			without any special tools or packages.  What is this good for?
+			Complex database changes for a software update.  Suppose you make
+			changes into your software that requires major changes to the
+			structure of the database, or even worse, the contents in certain
+			tables.  DBBrowser could be used to author and test a script that
+			contains all the changes.  The script could then be run at
+			production sites to apply the changes.
+		</p>
+		<a href="#top">Back to the Top</a>
+		<center><a name="how"><h2>How to Use BeanShell Scripting</h2></a></center>
+		<p>
+			In order for DBBrowser to know that a statement is a script rather
+			than a SQL statement, start the script with &quot;//bsh&quot;.
+			Also, there are two pieces of functionality that DBBrowser
+			provides beyond the standard BeanShell language.  The first is
+			that before your script is run, there are some variables that will
+			will be set and some commands will be installed in the scripting
+			environment.  Your script will have access to them.
+			<i>This list may be expanded in the future.</i>
+		</p>
+		<h3><a name="variables">Variables</a></h3>
+			<h4>_dbbConnectionProvider</h4> This variable is an object from
+				which a your script can get a java.sql.Connection.
+			<h4>_dbbBeanShellSession</h4> This variable is there for the use
+				of DBBrowser's built-in commands.  There are no properties or
+				methods in this object of use to the user.
+		<h3><a name="commands">Commands</a></h3>
+			<h4>dbbPrintResult(java.sql.ResultSet)</h4> Will display the
+				ResultSet in the output area of DBBrowser.  More than one
+				resultset can be displayed.  <strong>Note:</strong> Unlike
+				results of a SQL statement run directly by DBBrowser, results
+				displayed by this command are not cached, but read in all at
+				once.  For this reason, calling this command with large result
+				sets could take a long time and cause DBBrowser to use larger
+				amounts of memory.
+			<h4>dbbPrintResult(java.sql.ResultSet, boolean)</h4> This
+				command is just like dbbPrintResult(java.sql.ResultSet)
+			    except that passing in <code>true</code> for the second
+			    parameter will cause the resultset to be cached.
+			    <strong>Note:</strong> This command is for future use and
+			    should not be used yet.
+		<h3><a name="examples">Examples</a></h3>
+		<p>
+			Below is a simple example that will get a connection, execute a
+			query, then show the results in DBBrowser's display.  It does not
+			accomplish anything that couldn't be accomplished by simply
+			running the query in DBBrowser directly.  However, it should give
+			you an idea of how to use the variables and commands provided by
+			DBBrowser.
+			<pre>
+	//bsh
+	print("Hello World!");
+	
+	con = _dbbConnectionProvider.getConnection();
+	stmt = con.createStatement();
+	qry = stmt.executeQuery("Select * from mytable;");
+	dbbPrintResult(qry);
+	qry.close();
+	stmt.close();
+	con.close();
+
+	print("Done!");
+			</pre>
+		</p>
+		<p>
+			The following example is much more complex and shows the power of
+			scripting.  Suppose that you added a feature to some software
+			where files are stored in a database as BLOBs.  The feature is
+			used more often that you expected and you fear that the database
+			may grow to be unreasonably large due to the files stored in it.
+			To address this concern, you decide to move the data out of the
+			database and store them on the server filesystem.  Here is a
+			script that you might write to make the needed database changes.
+			This script will:
+			<ol>
+				<li>
+					Alter the table to create a field which will hold the
+					file's path.
+				</li>
+				<li>
+					Create a new file for each record and write the data to
+					file.
+				</li>
+				<li>Update each record with the file path.</li>
+				<li>Drop the BLOB column.</li>
+			</ol>
+			<pre>
+	//bsh
+
+	// This is an example script that will solve the hypothetical problem of
+	// moving documents that has been stored as BLOBs in the database onto the
+	// file system.  Each document can have multiple versions, so each version
+	// is given a unique name.
+
+	// *Note* java.io.* and java.util.* are already imported into BeanShell
+	// scripts by default.
+
+
+	// Get a connection to the database and create a statement object
+	con = _dbbConnectionProvider.getConnection();
+	stmt1 = con.createStatement();
+
+	// Create a field called filepath to the documentversion table
+	stmt1.executeUpdate("ALTER TABLE documentversion ADD COLUMN filepath VARCHAR(255);");
+
+	// Create a prepared statement to use later
+	stmt2 = con.prepareStatement("UPDATE documentversion SET filepath = ? WHERE documentid = ? and version = ? ;");
+
+	// Get a list of all document versions
+	qry = stmt1.executeQuery("Select documentid, version, docdata FROM documentversion;");
+
+	// Loop through the results
+	buff = new byte[1024];
+	while (qry.next()) {
+		// Write the data to file
+		data = qry.getBytes(3);
+		if (! qry.wasNull()) {
+			filename = "/tmp/documents/" + UUID.randomUUID().toString();
+			out = new FileOutputStream(new File(filename));
+			outstream = new FileOutputStream(filename);
+			outstream.write(data);
+			outstream.close();
+	
+			// Update the row with the file's name
+			stmt2.setString(1, filename);
+			stmt2.setLong(2, qry.getLong(1));
+			stmt2.setInt(3, qry.getInt(2));
+			stmt2.executeUpdate();
+		}
+	}
+
+	// Clean up the resultset and the update query
+	qry.close();
+	stmt2.close();
+
+	// Drop the docdata column
+	stmt1.executeUpdate("ALTER TABLE documentversion DROP COLUMN docdata;");
+
+	// Do final cleanup
+	stmt1.close();
+	con.close();
+			</pre>
+		</p>
+		<p><a href="#top">Back to the Top</a></p>
+	</body>
+</html>

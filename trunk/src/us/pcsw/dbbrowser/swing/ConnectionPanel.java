@@ -46,14 +46,17 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.Timer;
 import java.util.Vector;
 
@@ -76,6 +79,9 @@ import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 
 import javax.swing.event.CaretEvent;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileFilter;
 
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Style;
@@ -84,6 +90,9 @@ import javax.swing.text.TabSet;
 import javax.swing.text.TabStop;
 
 import javax.swing.undo.UndoManager;
+
+import bsh.EvalError;
+import bsh.TargetError;
 
 import us.pcsw.dbbrowser.bsh.BshExecutionResults;
 import us.pcsw.dbbrowser.bsh.BshExecutionWorker;
@@ -243,6 +252,8 @@ public class ConnectionPanel
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 	
 	private static final String RESULTS_TAB_PREFIX = "Results ";
+	
+	private static final String SCRIPT_IDENTIFIER = "//bsh";
 
 	/**
 	 * A reference to the database connection
@@ -255,9 +266,14 @@ public class ConnectionPanel
 	private Icon errorIcon = null;
 
 	/**
+	 * The filter used in the statement file selection dialog for DBBrowser scripts.
+	 */
+	private BasicFileFilter dbsFileFilter = new BasicFileFilter("dbs", "DBBrowser Script");
+	
+	/**
 	 * The filter used in the statement file selection dialog.
 	 */
-	private BasicFileFilter fileFilter = null;
+	private BasicFileFilter sqlFileFilter = new BasicFileFilter("sql", "SQL Script");
 	
 	/**
 	 * The icon to be displayed for information messages.
@@ -311,6 +327,7 @@ public class ConnectionPanel
 	private JSplitPane outputSplitPane;
 	private JTabbedPane outputTabbedPane;
 	private JTextPane shellOutputPane;
+	private JScrollPane shellOutputScrollPane;
 	private JSplitPane sPane;
 	private JLabel positionLabel;
 	private JPanel topPane;
@@ -374,7 +391,7 @@ public class ConnectionPanel
 		    } else if (source.equals(cancelButton)) {
 		    	cancelStatement();
 		    } else if (source.equals(executeButton)) {
-				executeStatement();
+				executeScript();
 		    } else if (source.equals(hld)) {
 				stmtPane.setText((String)(e.getActionCommand()));
 		    } else if (source.equals(testButton)) {
@@ -416,6 +433,37 @@ public class ConnectionPanel
 		} catch (java.lang.Throwable E) {
 		    handleException(E);
 		}
+	}
+	
+	private class RepeatingChangeListener implements ChangeListener
+	{
+		RepeatingChangeListener(ChangeListener l)
+		{
+			super();
+			innerListener = l;
+		}
+		ChangeListener innerListener;
+		public void stateChanged(ChangeEvent ce) {
+			innerListener.stateChanged(new ChangeEvent(ConnectionPanel.this));
+		}
+	}
+	
+	private Set changeListeners = new HashSet();
+	
+	public void addChangeListener(ChangeListener l)
+	{
+		Object o;
+		for (Iterator iter = changeListeners.iterator(); iter.hasNext();) {
+			o = iter.next();
+			if (o instanceof RepeatingChangeListener) {
+				if (((RepeatingChangeListener)o).innerListener.equals(l)) {
+					return;
+				}
+			}
+		}
+		ChangeListener cl = new RepeatingChangeListener(l);
+		changeListeners.add(cl);
+		outputTabbedPane.addChangeListener(cl);
 	}
 
 	/**
@@ -550,10 +598,10 @@ public class ConnectionPanel
 	}
 
 	/**
-	 *  Executes the current (selected) SQL statement.
+	 *  Executes the current (selected) SQL statement or BeanShell script.
 	 *  @param event ActionEvent The event that was sent.
 	 */
-	public void executeStatement()
+	public void executeScript()
 	{
 		String sql = null;
 		try {
@@ -568,11 +616,10 @@ public class ConnectionPanel
 				getResultSetTableModel().setResultSet(null);
 				msgArea.setText("There is no SQL statement or BeanShell Script to execute.");
 		    } else {
-		    	boolean isScript = sql.toLowerCase().startsWith("@bsh");
+		    	boolean isScript = isBshScript();
 		    	executeButton.setEnabled(false);
 				setMessage((isScript ? "Script" : "Statement") + " is being executed...", false);
 				if (isScript) {
-					sql = sql.substring(4, sql.length()).trim();
 					worker = new BshExecutionWorker(getConnectionProvider(), sql);
 					cancelButton.setEnabled(false);
 				} else {
@@ -682,14 +729,6 @@ public class ConnectionPanel
     {
 		return db;
     }
-    
-    private BasicFileFilter getFileFilter()
-    {
-    	if (fileFilter == null) {
-    		fileFilter = new BasicFileFilter("sql", "SQL Script");
-    	}
-    	return fileFilter;
-    }
 
 	/**
 	 * Gets the parent Frame window object.
@@ -721,11 +760,50 @@ public class ConnectionPanel
     {
     	return outputTabbedPane.getSelectedComponent();
     }
+    
+    private JFileChooser getScriptFileChooser()
+    {
+    	if (sqlChooser == null) {
+    		sqlChooser = new JFileChooser();
+    		sqlChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    		sqlChooser.addChoosableFileFilter(sqlFileFilter);
+    		sqlChooser.addChoosableFileFilter(dbsFileFilter);
+    		sqlChooser.setFileFilter(sqlFileFilter);
+    	} else if (sqlChooser.getSelectedFile() != null) {
+			File f = sqlChooser.getSelectedFile();
+			FileFilter[] filters = sqlChooser.getChoosableFileFilters();
+			boolean found = false;
+			for (int i = 0; i < filters.length; i++) {
+				if (filters[i].accept(f)) {
+					found = true;
+					break;
+				}
+			}
+			if (! found) {
+				String ext = BasicFileFilter.getExtension(f);
+				sqlChooser.addChoosableFileFilter(
+						new BasicFileFilter(ext, ext + " File")
+					);
+			}
+    	}
+    	return sqlChooser;
+    }
+    
+    public boolean isBshScript()
+    {
+    	return stmtPane.getText().startsWith(SCRIPT_IDENTIFIER);
+    }
+    
+    public boolean isSQLScript()
+    {
+    	return stmtPane.getText().length() > 0 && (! isBshScript());
+    }
 
     /**
-     * Gets the text of the SQL statement displayed in the SQL text pane.
+     * Gets the text of the SQL statement or BeanShell script displayed in the
+     * text pane.
      */
-    public String getSQLText()
+    public String getScriptText()
     {
 		return stmtPane.getText();
     }
@@ -792,6 +870,20 @@ public class ConnectionPanel
 	{
 		ResultSetTableModel model = getResultSetTableModel();
 		return (model != null && model.getRowCount() > 0);
+	}
+	
+	/**
+	 * Indicates that the panel is currently displaying a script's output.
+	 */
+	public boolean hasScriptOutput()
+	{
+		Component comp = outputTabbedPane.getSelectedComponent();
+		if (comp instanceof ResultSetPanel) {
+			return false;
+		} else if (comp == shellOutputScrollPane) {
+			return shellOutputPane.getText().length() > 0;
+		}
+		return false;
 	}
 
     /**
@@ -1018,13 +1110,13 @@ public class ConnectionPanel
 		outputTabbedPane.setMnemonicAt(0, 'R');
 		
 		shellOutputPane = new JTextPane();
-		JScrollPane jsp = new JScrollPane(shellOutputPane);
-		jsp.setVerticalScrollBarPolicy
+		shellOutputScrollPane = new JScrollPane(shellOutputPane);
+		shellOutputScrollPane.setVerticalScrollBarPolicy
 			(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		jsp.setHorizontalScrollBarPolicy
+		shellOutputScrollPane.setHorizontalScrollBarPolicy
 			(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		jsp.setPreferredSize(new Dimension(450,250));
-		outputTabbedPane.add(jsp, "Shell Output");
+		shellOutputScrollPane.setPreferredSize(new Dimension(450,250));
+		outputTabbedPane.add(shellOutputScrollPane, "Shell Output");
 		outputTabbedPane.setMnemonicAt(1, 'O');
 		
 		outputSplitPane.setBottomComponent(outputTabbedPane);
@@ -1092,28 +1184,20 @@ public class ConnectionPanel
 	}
 
 	/**
-	 * Reads an SQL statement from file into the SQL text display.
+	 * Reads an SQL statement or BeanShell script from file into the text display.
 	 */
-	public void loadSQLStatement()
+	public void loadFile()
 	{
 		try {
 			BufferedReader inFile = null;
 			int response;
 			File file = null;
-			if (sqlChooser == null) {
-				sqlChooser = new JFileChooser();
-			    sqlChooser.setFileFilter(getFileFilter());
-			} else if (sqlChooser.getSelectedFile() != null) {
-				file = sqlChooser.getSelectedFile();
-				BasicFileFilter fileFilter = getFileFilter();
-				if (! fileFilter.accept(file)) {
-					fileFilter.addExtension(fileFilter.getExtension(file));										
-				}
-			}
 			StringBuffer buffer = null;
+			
+			JFileChooser sqlChooser = getScriptFileChooser();
 	
 		    // Get the path/name of the file to save the file to.
-		    sqlChooser.setDialogTitle("Open SQL Script");
+		    sqlChooser.setDialogTitle("Open File");
 		    response = sqlChooser.showOpenDialog(this);
 		    if (response == JFileChooser.APPROVE_OPTION) {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -1183,6 +1267,19 @@ public class ConnectionPanel
 			while (e.hasMoreElements()) {
 				listener = (StatusListener)e.nextElement();
 				listener.statusChanged(se);
+			}
+		}
+	}	
+	
+	public void removeChangeListener(ChangeListener l)
+	{
+		Object o;
+		for (Iterator iter = changeListeners.iterator(); iter.hasNext();) {
+			o = iter.next();
+			if (o instanceof RepeatingChangeListener) {
+				if (((RepeatingChangeListener)o).innerListener.equals(l)) {
+					iter.remove();
+				}
 			}
 		}
 	}
@@ -1286,10 +1383,32 @@ public class ConnectionPanel
 	public void saveResultSet()
 	{
 		try {
-			notifyStatusListeners
-				(new StatusEvent(this, StatusTypeEnum.BUSY));
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			TableModelExport.saveTableModel(this, this.getResultSetTableModel(), "SQL Results");
+			if (hasResultSet()) {
+				notifyStatusListeners
+					(new StatusEvent(this, StatusTypeEnum.BUSY));
+				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				TableModelExport.saveTableModel(this, this.getResultSetTableModel(), "SQL Results");
+			} else if (hasScriptOutput()) {
+				JFileChooser fchooser = new JFileChooser();
+				fchooser.setFileFilter(new BasicFileFilter("sql", "SQL Script"));
+				fchooser.setFileFilter(new BasicFileFilter("dbs", "DBBrowser Script"));
+				fchooser.setFileFilter(new BasicFileFilter("txt", "Text File"));
+				fchooser.setDialogTitle("Save Script Output");
+				fchooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				fchooser.showSaveDialog(this);
+				File f = fchooser.getSelectedFile();
+				if (f != null) {
+					notifyStatusListeners
+						(new StatusEvent(this, StatusTypeEnum.BUSY));
+					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					Writer w = new FileWriter(f);
+					shellOutputPane.write(w);
+					w.close();
+					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+					notifyStatusListeners
+						(new StatusEvent(this, StatusTypeEnum.NOT_BUSY));
+				}
+			}
 		} catch (Throwable t) {
 			notifyStatusListeners
 				(new StatusEvent(this, StatusTypeEnum.NOT_BUSY));
@@ -1299,9 +1418,9 @@ public class ConnectionPanel
 	}
 
 	/**
-	 * Saves the SQL statement to file.
+	 * Saves the SQL statement or BeanShell script to file.
 	 */
-	public void saveSQLStatement()
+	public void saveFile()
 	{
 		try {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -1309,13 +1428,22 @@ public class ConnectionPanel
 			File file = null;
 			FileWriter outFile = null;
 			int response;
-			if (sqlChooser == null) {
-				sqlChooser = new JFileChooser();
-			    sqlChooser.setFileFilter(new BasicFileFilter("sql", "SQL Script"));
+			
+			JFileChooser sqlChooser = getScriptFileChooser();
+			if (isBshScript()) {
+				sqlChooser.setFileFilter(dbsFileFilter);
+			} else if (isSQLScript()) {
+				sqlChooser.setFileFilter(sqlFileFilter);
+			} else {
+				JOptionPane.showMessageDialog(
+						this, "There is nothing to save.",
+						"Cannot Save", JOptionPane.INFORMATION_MESSAGE
+					);
+				return;
 			}
-	
+			
 	    	// Get the path/name of the file to save the file to.
-		    sqlChooser.setDialogTitle("Save SQL Script");
+			sqlChooser.setDialogTitle("Save File");
 		    response = sqlChooser.showSaveDialog(this);
 	    	if (response == JFileChooser.APPROVE_OPTION) {
 				file = sqlChooser.getSelectedFile();
@@ -1335,9 +1463,9 @@ public class ConnectionPanel
 		    		setCursor
 		    			(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				    outFile = new FileWriter(file);
-				    outFile.write(getSQLText());
+				    stmtPane.write(outFile);
 				    outFile.close();
-				    setMessage("SQL script saved to " + file.getName() + ".", false);
+				    setMessage((isSQLScript() ? "SQL" : "DBBrowser") + " script saved to " + file.getName() + ".", false);
 					notifyStatusListeners
 						(new StatusEvent(this, StatusTypeEnum.NOT_BUSY));
 				    setCursor
@@ -1447,8 +1575,7 @@ public class ConnectionPanel
 		}
 		
 		for (Iterator iter = results.getExceptionList().iterator(); iter.hasNext(); ) {
-			executeMsg.append('\n');
-			executeMsg.append(((Throwable)iter.next()).getMessage());
+			executeMsg.append("\n" + createErrorOutput((Throwable)iter.next()));
 		}
 		
 		shellOutputPane.setText(results.getOutput());
@@ -1474,11 +1601,29 @@ public class ConnectionPanel
 		// Display the error.
 		UIManager.getLookAndFeel().
 			provideErrorFeedback(msgArea);
-		StringBuffer executeMsg = new StringBuffer("ERROR: ");
-		executeMsg.append
-			(t.getMessage());
-		setMessage(executeMsg.toString(), true);
+		setMessage(createErrorOutput(t), true);
 		Debug.log(t.getMessage());
+	}
+	
+	private String createErrorOutput(Throwable t)
+	{
+		StringBuffer executeMsg = new StringBuffer("ERROR: ");
+		if (t instanceof EvalError) {
+			executeMsg.append("LINE: ");
+			executeMsg.append(((EvalError)t).getErrorLineNumber());
+			if (t instanceof TargetError) {
+				executeMsg.append("\t");
+				executeMsg.append(((EvalError)t).getErrorText());				
+				executeMsg.append("\n\t");
+				executeMsg.append(((TargetError)t).getTarget().getMessage());
+			} else {
+				executeMsg.append("\n\t");
+				executeMsg.append(((EvalError)t).getErrorText());				
+			}
+		} else {
+			executeMsg.append(t.getMessage());
+		}
+		return executeMsg.toString();
 	}
 
 	public void sqlExecuted(StatusEvent se) {

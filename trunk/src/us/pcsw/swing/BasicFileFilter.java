@@ -217,7 +217,7 @@ public class BasicFileFilter extends javax.swing.filechooser.FileFilter {
      * @see #getExtension
      * @see javax.swing.filechooser.FileFilter#accept
      */
-     public String getExtension(File f) {
+     public static String getExtension(File f) {
 	if (f != null) {
 	    String filename = f.getName();
 	    int i = filename.lastIndexOf('.');
