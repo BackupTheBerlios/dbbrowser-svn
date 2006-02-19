@@ -1,0 +1,245 @@
+body
+{
+	background-color: #E1E1F6;
+	font-family: Verdana;
+	line-height: 150%;
+}
+
+h1,h2,h3,h4,h5,h6
+{
+	color: #8C5E4F;
+	background-color: transparent;
+	font-family: Arial;
+}
+
+h4,h5,h6
+{
+	color: #000000;
+	background-color: transparent;
+}
+
+h1
+{
+	font-size: 18pt;
+	margin: 0px 0px 10px 0px;
+	padding: 0px;
+}
+
+h2,h3,h4,h5,h6
+{
+	margin: 10px 0px 0px 0px;
+}
+
+h2
+{
+	font-size: 12pt;
+}
+
+h3,h4,h5,h6
+{
+	font-size: 10pt;
+}
+
+p
+{
+	margin: 0em 0em 1em 0em;
+}
+
+ul,
+ol
+{
+	margin-top: 0px;
+}
+
+li
+{
+	margin-bottom: 0.8em;
+}
+
+.compact-list li
+{
+	margin-bottom: 0px;
+}
+
+label
+{
+	font-weight: bold;
+	display: block;
+}
+
+button
+{
+	
+}
+
+.small
+{
+	font-size: 80%;
+}
+
+.italic
+{
+	font-style: italic;
+}
+
+.annotation
+{
+	font-size: 90%;
+	line-height: normal;
+}
+
+.form-item, 
+.buttons
+{
+	width: 100%;
+	display: block;
+	margin: 0px 0px 5px 0px;
+}
+
+.buttons
+{
+	margin-top: 1em;
+	padding-top: 0.5em;
+	border-top: 1px dashed #AAAAAA;
+}
+
+.form-item input
+{
+	width: 100%;
+}
+
+.form-item.checkbox input
+{
+	width: auto;
+}
+
+.form-item.checkbox label
+{
+	font-weight: normal;
+	display: inline;
+}
+
+#frmContact, #frmLogin
+{
+	width: 70%;
+	color: inherit;
+	background-color: #EEEEEE;
+	border: 1px solid #CCCCCC;
+	padding: 1em;
+	margin: 0px;
+}
+
+#frmLogin
+{
+	margin: 30px auto 0px auto;
+}
+
+#txaReason
+{
+	width: 100%;
+	height: 100px;
+}
+
+#content-cell
+{
+	width: 624px;
+	height: 518px;
+	background-image: url(../images/pcsw_index2_03.png);
+	background-repeat: repeat-y;
+	background-position: top left;
+	vertical-align: top;
+}
+
+#content-cell #content
+{
+	height: 472px;
+	width: 584px;
+	overflow: auto;
+	margin: 0px;
+	padding: 20px 20px 20px 20px;
+}
+
+#menu
+{
+	margin: 0px auto;
+	padding: 0px;
+	height: 32px;
+	position: relative;
+}
+
+#menu li
+{
+	float: left;
+	display: block;
+	height: 32px;
+	padding: 0px;
+	margin: 0em 0em 0em 0em;
+}
+
+#menu li a
+{
+	color: #8C5E4F;
+	background-color: transparent;
+	text-decoration: none;
+	display: block;
+	padding: 0.4em 1em 0em 1em;
+}
+
+.label-annotation
+{
+	font-size: 80%;
+	font-weight: normal;
+	font-style: italic;
+	color: #666666;
+	background-color: transparent;
+}
+
+.info-table
+{
+	border: 1px solid #CCCCCC;
+	border-collapse: collapse;
+	margin: 2em auto;
+	width: 70%;
+	font-size: 80%;
+}
+
+.info-table td
+{
+	border: 1px solid #CCCCCC;
+	vertical-align: top;
+	padding: 5px;
+}
+
+.info-table th
+{
+	color: #000000;
+	background-color: #DDDDDD;
+}
+
+.no-bullets
+{
+	padding-left: 0px;
+	list-style-type: none;
+}
+
+#driver-list, #file-list
+{
+	width: 80%;
+	margin: 2em auto;
+}
+
+#driver-list li, #file-list li
+{
+	margin-bottom: 1.6em;
+}
+
+#logo
+{
+	color: #8C5E4F;
+	background-color: transparent;
+	font-family: Arial;
+	font-size: 18pt;
+	font-weight: bold;
+	margin: 0px 0px 0px 0px;
+	padding: 0.4em 1em 0em 0em;
+}
