@@ -21,6 +21,8 @@
  */
 package us.pcsw.dbbrowser;
 
+import bsh.Interpreter;
+
 import java.io.File;
 import java.io.IOException;
 import java.awt.GraphicsEnvironment;
@@ -80,15 +82,29 @@ public final class Main
 			    		usageErr();
 			    	} else {
 						if (args[i].equals("-d")) {
-							try {
-							    logFile = new File(args[++i]);
-							    Debug.setLogFile(logFile);
-							} catch (IOException exc) {
-							    System.err.println("Unable to open " + args[i] + "for output.  Debugging will be written to standard error output.");
-							    Debug.logToStdErr();
+							if ((i + 1) < args.length) {
+								try {
+								    logFile = new File(args[++i]);
+								    Debug.setLogFile(logFile);
+								} catch (IOException exc) {
+								    System.err.println("Unable to open " + args[i] + "for output.  Debugging will be written to standard error output.");
+								    Debug.logToStdErr();
+								}
+							} else {
+								usageErr();
 							}
-//						} else if (args[i].equals("-g")) {
-							//javax.swing.UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+						} else if (args[i].startsWith("-s")) {
+							if ((i + 1) < args.length) {
+								try {
+									Interpreter bsh = new Interpreter();
+									bsh.source(args[i + 1]);
+									i++;
+								} catch (Throwable t) {
+									System.err.println("Unable to run the script " + args[i + 1]);
+								}
+							} else {
+								usageErr();
+							}
 			    		} else {
 						    usageErr();
 						}
@@ -143,8 +159,9 @@ public final class Main
     /** Prints a usage listing to stderr. */
     private static void usageErr()
     {
-        System.err.println("\n\nUsage: java us.pcsw.dbbrowser.Main [-d logfile] [filename]\n");
+        System.err.println("\n\nUsage: java us.pcsw.dbbrowser.Main [-d logfile] [-s scriptfile] [filename]\n");
 		System.err.println("-d logfile      Turns on debugging. Debug messages are logged to the file indicated by logfile.");
+		System.err.println("-s scriptfile   Runs the indicates beanshell script before the UI is initialized");
 		System.err.println("filename        The name of a file containing saved connection parameters to load on startup.\n");
 		System.exit(1);
     }
