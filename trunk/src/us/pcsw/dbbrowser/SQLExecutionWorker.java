@@ -32,8 +32,6 @@ import us.pcsw.dbbrowser.event.StatusEvent;
 import us.pcsw.dbbrowser.event.StatusTypeEnum;
 
 /**
- *  us.pcsw.dbbrowser.swing.ReportPrinter
- * -
  * This class creates a report based on a resultset.
  *
  * <P><B>Revision History:</B><UL>
@@ -115,7 +113,7 @@ public final class SQLExecutionWorker extends ExecutionWorker
 			ResultSet rs = null;
 			boolean handleMultipleResults = Preferences.getCachePageSize() < 1;
 			int count = stmt.getUpdateCount();
-			boolean hasMoreResults;
+			boolean hasMoreResults = false;
 			do {
 				if (count == -1) {
 					// We have a resultset
@@ -131,10 +129,15 @@ public final class SQLExecutionWorker extends ExecutionWorker
 					// We have update results
 					execResults.getResultCountList().add(Integer.valueOf(count));
 				}
-				// The order of stmt.getMoreResults(), then
-				// stmt.getUpdateCount() is crucial.
-				hasMoreResults = stmt.getMoreResults();
-				count = stmt.getUpdateCount();
+				// Running the following commands could cause the cached
+				// resultset to close; so only execute them if we are using
+				// the loaded resultset table model.
+				if (handleMultipleResults) {
+					// The order of stmt.getMoreResults(), then
+					// stmt.getUpdateCount() is crucial.
+					hasMoreResults = stmt.getMoreResults();
+					count = stmt.getUpdateCount();
+				}
 			} while (
 					handleMultipleResults &&
 					(hasMoreResults || count > -1)
