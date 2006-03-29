@@ -58,8 +58,6 @@ import us.pcsw.swing.SystemInfoDialog;
 import us.pcsw.swing.ToolbarButton;
 
 /**
- * us.pcsw.dbbrowser.swing.MainFrame
- * -
  * The primary frame for the dbbrowser application.
  *
  * <P><B>Revision History:</B><UL>
@@ -989,15 +987,25 @@ public class MainFrame
 		stmtSaveSQL.setEnabled(sqlStmt);
 		toolbarSaveSQL.setEnabled(sqlStmt);
 		if (results) {
-			stmtSaveResult.setText("Save Result...");
 			stmtSaveResult.setEnabled(true);
-			toolbarSaveResult.setText("Save Result");
 			toolbarSaveResult.setEnabled(true);
+			if (Preferences.displayToolbarLabels()) {
+				stmtSaveResult.setText("Save Result...");
+				toolbarSaveResult.setText("Save Result");
+			} else {
+				stmtSaveResult.setText(null);
+				toolbarSaveResult.setText(null);
+			}
 		} else if (scriptOutput) {
-			stmtSaveResult.setText("Save Output...");
 			stmtSaveResult.setEnabled(true);
-			toolbarSaveResult.setText("Save Output");
 			toolbarSaveResult.setEnabled(true);
+			if (Preferences.displayToolbarLabels()) {
+				stmtSaveResult.setText("Save Output...");
+				toolbarSaveResult.setText("Save Output");
+			} else {
+				stmtSaveResult.setText(null);
+				toolbarSaveResult.setText(null);
+			}
 		} else {
 			stmtSaveResult.setEnabled(false);
 			toolbarSaveResult.setEnabled(false);
@@ -1015,7 +1023,9 @@ public class MainFrame
 			    ((ConnectionPanel)conTab.getComponentAt(i)).isConnected();
 		}
 		viewViewDBObjects.setEnabled(connected);
-		toolbarViewObjects.setEnabled(connected & ! viewViewDBObjects.getState());
+		toolbarViewObjects.setEnabled(
+				connected & ! viewViewDBObjects.getState()
+			);
 	}
 
     private void refreshTitle()
