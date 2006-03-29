@@ -1610,15 +1610,31 @@ public class ConnectionPanel
 		StringBuffer executeMsg = new StringBuffer("ERROR: ");
 		if (t instanceof EvalError) {
 			executeMsg.append("LINE: ");
-			executeMsg.append(((EvalError)t).getErrorLineNumber());
+			try {
+				executeMsg.append(((EvalError)t).getErrorLineNumber());
+			} catch (NullPointerException e) {
+				// There have been times where I get NPEs
+			}
 			if (t instanceof TargetError) {
 				executeMsg.append("\t");
-				executeMsg.append(((EvalError)t).getErrorText());				
+				try {
+					executeMsg.append(((EvalError)t).getErrorText());				
+				} catch (NullPointerException e) {
+					// There have been times where I get NPEs
+				}
 				executeMsg.append("\n\t");
-				executeMsg.append(((TargetError)t).getTarget().getMessage());
+				try {
+					executeMsg.append(((TargetError)t).getTarget().getMessage());
+				} catch (Exception e) {
+					executeMsg.append(t.getMessage());
+				}
 			} else {
 				executeMsg.append("\n\t");
-				executeMsg.append(((EvalError)t).getErrorText());				
+				try {
+					executeMsg.append(((EvalError)t).getErrorText());				
+				} catch (Exception e) {
+					executeMsg.append(t.getMessage());
+				}
 			}
 		} else {
 			executeMsg.append(t.getMessage());
