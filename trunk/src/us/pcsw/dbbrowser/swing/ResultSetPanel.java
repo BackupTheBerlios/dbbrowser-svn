@@ -70,6 +70,8 @@ public class ResultSetPanel extends JPanel
 {
 	// CONSTANTS
 	
+	private static final long serialVersionUID = 1L;
+	
 	private static final String LOADED_CACHE_DESC = "Rows Cached: ";
 	private static final String LOADED_COUNT_DESC = "Rows Loaded: ";
 	private static final String X_DESC = "Row: ";

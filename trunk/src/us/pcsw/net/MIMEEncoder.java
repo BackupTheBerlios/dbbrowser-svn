@@ -17,7 +17,7 @@ import java.io.OutputStream;
  *                javadoc.  PAC </LI>
  * </UL></P>
  */
-public class MIMEEncoder {
+public class MIMEEncoder extends Object {
 
 	private String bString = "";
 	private String bodyString = "";

@@ -21,10 +21,9 @@
  */
 package us.pcsw.dbbrowser.cp;
 
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import com.mysql.jdbc.DatabaseMetaData;
 
 import us.pcsw.util.IntegerUtil;
 import us.pcsw.util.StringUtil;

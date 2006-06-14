@@ -23,7 +23,6 @@ package us.pcsw.dbbrowser.bsh;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * A token object that can be used by the DBBrowser beanshell command objects
@@ -42,14 +41,14 @@ public final class BeanShellSession
 	public BeanShellSession()
 	{
 		super();
-		id = UUID.randomUUID();
+		id = IDFactory.getNewID();
 		resultList = new LinkedList();
 	}
 
 	// MEMBERS
 	
-	private UUID id;
-	public UUID getId()
+	private long id;
+	public long getId()
 	{
 		return id;
 	}
@@ -66,7 +65,7 @@ public final class BeanShellSession
 	public boolean equals(Object obj)
 	{
 		if (obj instanceof BeanShellSession) {
-			return ((BeanShellSession)obj).getId().equals(id);
+			return ((BeanShellSession)obj).getId() == id;
 		} else {
 			return false;
 		}
@@ -77,7 +76,7 @@ public final class BeanShellSession
 	 */
 	public int hashCode()
 	{
-		return id.hashCode();
+		return Long.valueOf(id).hashCode();
 	}
 	
 	/**
@@ -85,7 +84,7 @@ public final class BeanShellSession
 	 */
 	public String toString()
 	{
-		return "BeanShellSession: " + id.toString();
+		return "BeanShellSession: " + String.valueOf(id);
 	}
 	
 	// METHODS

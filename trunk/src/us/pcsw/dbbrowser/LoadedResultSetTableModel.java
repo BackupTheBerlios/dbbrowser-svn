@@ -27,6 +27,8 @@ public final class LoadedResultSetTableModel extends ResultSetTableModel
 {
 	// CONSTRUCTORS
 	
+	private static final long serialVersionUID = 1L;
+	
 	/**
 	 * Creates a new instance.
 	 */

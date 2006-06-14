@@ -645,26 +645,10 @@ public class ConnectionPanel
 	 */
 	private void executeTest()
 	{
-		try {
-			DatabaseMetaData dmd = getDatabaseConnection().getMetaData();
-			getResultSetTableModel().setResultSet(dmd.getTypeInfo());
-			
-/*			executeStatement();
-			rp = new ReportPrinter(getResultSetTableModel());
-			JDialog jd = new JDialog() {
-				public void paint(Graphics g) {
-					try {
-						rp.paint(g,0);
-					} catch (Throwable t) {
-						Debug.log(t);
-					}
-				}
-			};
-			jd.setVisible(true);
-			*/
-		} catch (Throwable t) {
-			Debug.log(t);
-		}
+		javax.swing.JFrame frame = (javax.swing.JFrame)getTopLevelAncestor();
+		ImageIcon icon = new ImageIcon(getClass().getResource
+				("/us/pcsw/dbbrowser/resources/images/SQLPage.png"));
+		frame.setIconImage(icon.getImage());
 	}
 
 	/**

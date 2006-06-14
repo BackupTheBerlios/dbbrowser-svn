@@ -211,9 +211,9 @@ public class MainFrame
 		super();
 		
 		// Set the icon of the frame
-//		ImageIcon icon = new ImageIcon(getClass().getResource
-//			("/us/pcsw/dbbrowser/resources/images/DBBrowser.png"));
-//		setIconImage(icon.getImage());
+		ImageIcon icon = new ImageIcon(getClass().getResource
+			("/us/pcsw/dbbrowser/resources/images/DBBrowser.png"));
+		setIconImage(icon.getImage());
 		
 		// This allows us to do some special stuff on Mac which makes the
 		// DBBrowser application integrate with the OS better.
