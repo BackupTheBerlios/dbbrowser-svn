@@ -200,57 +200,62 @@ public class CSVImportThread extends Thread
 							}
 							
 							// Try to parse the data
-							if (row[j] != null) {
-								try {
-									switch (insertColumns[j].getDataType().getJDBCType()) {
-									case Types.DATE:
-										try {
-											// Try to parse the date using locale formatting
-											data = DATE_FORMAT.parse(data.toString());
-										} catch (ParseException pe) {
+							if (data != null) {
+								String s = data.toString().trim(); 
+								if (s.length() == 0) {
+									data = null;
+								} else {
+									try {
+										switch (insertColumns[j].getDataType().getJDBCType()) {
+										case Types.DATE:
 											try {
-												data = DATE_FORMAT2.parseObject(data.toString());
-											} catch (ParseException pe2) {
+												// Try to parse the date using locale formatting
+												data = DATE_FORMAT.parse(s);
+											} catch (ParseException pe) {
+												try {
+													data = DATE_FORMAT2.parseObject(s);
+												} catch (ParseException pe2) {
+													// Let the JDBC driver do what it can.
+												}
+											}
+											break;
+										case Types.TIMESTAMP:
+											try {
+												// Try to parse the date using locale formatting
+												data = TIMESTAMP_FORMAT.parse(s);
+											} catch (ParseException pe) {
 												// Let the JDBC driver do what it can.
 											}
-										}
-										break;
-									case Types.TIMESTAMP:
-										try {
-											// Try to parse the date using locale formatting
-											data = TIMESTAMP_FORMAT.parse(data.toString());
-										} catch (ParseException pe) {
+											break;
+										case Types.TIME:
+											try {
+												// Try to parse the date using locale formatting
+												data = TIME_FORMAT.parse(s);
+											} catch (ParseException pe) {
+												// Let the JDBC driver do what it can.
+											}
+											break;
+										default:
 											// Let the JDBC driver do what it can.
 										}
-										break;
-									case Types.TIME:
-										try {
-											// Try to parse the date using locale formatting
-											data = TIME_FORMAT.parse(data.toString());
-										} catch (ParseException pe) {
-											// Let the JDBC driver do what it can.
-										}
-										break;
-									default:
-										// Let the JDBC driver do what it can.
+										stmt.setObject(
+												paramIndex, data,
+												insertColumns[j].getDataType().getJDBCType()
+											);
+									} catch (Exception e) {
+										data = null;
+										notifyListener(
+												new ImportEvent(
+														this, 0, parser.getLastLineNumber(),
+														"Unable to parse the data in row " +
+														parser.getLastLineNumber() +
+														" and column " + String.valueOf(j + 1) +
+														" NULL will be inserted: " +
+														e.getLocalizedMessage(),
+														ImportEvent.EVENT_TYPE_STOPPED
+													)
+											);
 									}
-									stmt.setObject(
-											paramIndex, data,
-											insertColumns[j].getDataType().getJDBCType()
-										);
-								} catch (Exception e) {
-									data = null;
-									notifyListener(
-											new ImportEvent(
-													this, 0, parser.getLastLineNumber(),
-													"Unable to parse the data in row " +
-													parser.getLastLineNumber() +
-													" and column " + String.valueOf(j + 1) +
-													" NULL will be inserted: " +
-													e.getLocalizedMessage(),
-													ImportEvent.EVENT_TYPE_STOPPED
-												)
-										);
 								}
 							}
 							

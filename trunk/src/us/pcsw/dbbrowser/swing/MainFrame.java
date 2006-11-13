@@ -36,6 +36,7 @@ import java.io.File;
 import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -823,7 +824,8 @@ public class MainFrame
 		JToolBar toolbar = new JToolBar();
 		boolean display = Preferences.displayToolbarLabels();
 		ImageIcon icon = null;
-		javax.swing.JComponent seperator = null;
+		ImageIcon sepIcon = new ImageIcon(getClass().getClassLoader().getResource
+					("us/pcsw/dbbrowser/resources/images/ToolbarSeperator.png"));
 					
 		toolbar.setFloatable(false);
 		toolbar.setBorderPainted(false);
@@ -868,10 +870,7 @@ public class MainFrame
 		toolbar.add(toolbarCloseConnection);
 		
 		if (! display) {
-			icon = new ImageIcon(getClass().getClassLoader().getResource
-								("us/pcsw/dbbrowser/resources/images/ToolbarSeperator.png"));
-			seperator = new javax.swing.JLabel(icon);
-			toolbar.add(seperator);
+			toolbar.add(new JLabel(sepIcon));
 		}
 		
 		// Open SQL button
@@ -914,10 +913,7 @@ public class MainFrame
 		toolbar.add(toolbarSaveResult);
 		
 		if (! display) {
-			icon = new ImageIcon(getClass().getClassLoader().getResource
-								("us/pcsw/dbbrowser/resources/images/ToolbarSeperator.png"));
-			seperator = new javax.swing.JLabel(icon);
-			toolbar.add(seperator);
+			toolbar.add(new JLabel(sepIcon));
 		}
 		
 		// View DB Objects
