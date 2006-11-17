@@ -102,6 +102,7 @@ import us.pcsw.dbbrowser.event.ElapsedTimeEventTimer;
 import us.pcsw.dbbrowser.event.StatusEvent;
 import us.pcsw.dbbrowser.event.StatusListener;
 import us.pcsw.dbbrowser.event.StatusTypeEnum;
+import us.pcsw.dbbrowser.swing.text.HighlightDocument;
 
 import us.pcsw.util.Debug;
 
@@ -333,10 +334,8 @@ public class ConnectionPanel
 	private JPanel topPane;
 	
 	// SQL statement edit area
-	private DefaultStyledDocument stmtStyledDocument;
 	private JTextPane stmtPane;
 	private JScrollPane stmtPaneScrollPane;
-	private Style defaultStyle;
 	
 	// Message area
 	private JTextArea msgArea;
@@ -940,9 +939,11 @@ public class ConnectionPanel
 	
 		// SQL statement edit area
 		stmtPane = new JTextPane();
-		stmtStyledDocument = new DefaultStyledDocument();
-		defaultStyle = stmtStyledDocument.getStyle("default");
-		stmtPane.setStyledDocument(stmtStyledDocument);
+		
+		HighlightDocument doc = new HighlightDocument(stmtPane , HighlightDocument.SQL_TYPE);
+		
+		stmtPane.setDocument(doc);
+		
 		stmtPane.setDragEnabled(true);
 		stmtPane.addCaretListener(this);
 		stmtPane.addKeyListener(this);
@@ -1286,30 +1287,9 @@ public class ConnectionPanel
 	 */
 	void reloadPreferences()
 	{
-		stmtPane.setFont(Preferences.getSQLFont());
-		msgAreaPane.setFont(Preferences.getSQLFont());
-
-		// This entire code for figuring out where to set tab stops seems like
-		// one big hack, but I haven't been able to figure out a better way.
-		FontMetrics fm =
-			stmtPane.getFontMetrics(stmtStyledDocument.getFont(defaultStyle));
-		int charSize;
-		charSize = fm.stringWidth(ALPHANUMERIC) / ALPHANUMERIC.length();
-
-		// Determine the tab stops from 0 to 80 characters
 		int ts = Preferences.getSQLTabSize();
-		int j = 80/ts;
-		if ((ts * j) > 80) {
-			j--;	// correct for rounding up.
-		}
-		TabStop tStop[] = new TabStop[j];
-		for (int i = 0; i < j; i++) {
-			tStop[i] = new TabStop((i + 1) * ts * charSize);
-		}
-		TabSet myTabSet = new TabSet(tStop);
-
-		// Change the tab size for the default style attribute.
-		StyleConstants.setTabSet(defaultStyle, myTabSet);
+		HighlightDocument doc = (HighlightDocument)stmtPane.getStyledDocument();
+		doc.setTabs(ts);
 	}
 
 	/**
