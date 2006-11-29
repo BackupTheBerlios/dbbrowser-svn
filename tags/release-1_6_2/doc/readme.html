@@ -1,0 +1,222 @@
+<html>
+	<head>
+		<title>Installing the DB Browser Application</title>
+	</head>
+	<body>
+						<h1>DBBrowser</h1>
+						<h2>About the DB Browser Application</h2>
+						<p>
+							DBBrowser is a program which can be used to view the structure
+							of databases as well as to run queries against them.  The
+							program is written to work with as many RDBMS systems as
+							possible, using the JDBC API.  Currently, the program supports
+							connections to PostgreSQL, MySQL, Microsoft SQL Server 2000,
+							and Oracle RDBMS systems.  The DBBrowser uses a plugin API to
+							do this and can be made to connect to any other system for
+							which a JDBC driver exists.  More information on how to do
+							this will be written at a future time.  Until then, you may be
+							able to use the generic JDBC plugin included in the DBBrowser
+							release.  You are encouraged to contact the authors of this
+							software for the source and/or an explaination of how a plugin
+							can be created that meets your needs.
+						</p>
+						<p>
+							This software is GPL licensed by
+							<a href="mailto:pchapman@pcsw.us">
+								Philip A. Chapman (pchapman@pcsw.us)
+							</a>.
+							Please see the <a href="gpl.txt">license document</a> for more
+							information on the license.  Many thanks to Garrett Baker, who
+							has done much work tweaking the UI and adding code to make the
+							DBBrowser application integrate better with Apple's OS X.
+						</p>
+						<p>
+							You can find the latest information about dbbrowser at
+							<a href="http://dbbrowser.berlios.de/">
+								http://dbbrowser.berlios.de/
+							</a>.  The latest version is available at
+							<a href="http://developer.berlios.de/project/filelist.php?group_id=5387">
+								http://developer.berlios.de/project/filelist.php?group_id=5387
+							</a>.
+						</p>
+						
+						<h2>Installing the DB Browser Application</h2>
+						
+						<h3>Installing Java</h3>
+						<p>
+							Note that the DBBrowser application requires the Java JRE
+							version 1.4.0 or higher.  More info on how to obtain the JRE
+							can be found at
+							<a href="http://java.sun.com">http://java.sun.com</a> or
+							<a href="http://java.com/en/index.jsp">
+							http://java.com/en/index.jsp</a>.
+						</p>
+						
+						<h3>Installing DB Browser</h3>
+						<p>
+							Unzip dbbrowser.zip and copy the dbbrowser directory into the
+							location on your hard-drive where you want the program files
+							to be stored.  The dbbrowser directory contains these files:
+						</p>
+
+						<ul class="no-bullets" id="file-list">
+							<li>
+								<h4><s>DBBrowser.exe</s></h4>
+								<p>
+									A windows executable which will run DBBrowser.
+									You can easily create a Windows shortcut to this
+									executable.
+								</p>
+								<p>
+									<strong>Note:</strong> This program is not Open-Source
+									and is no longer included in the DBBrowser distributions.
+									If you are a Windows user that is upgrading, just replace
+									the files in your dbbrowser directories with the files in
+									the new distribution.  The DBBrowser.exe file should
+									continue to work.  If you are a windows user who is trying
+									to use DBBrowser for the very first time and would like to
+									have this executable, please contact the author of
+									DBBrowser.  I will provide it free of change.  If the need
+									for it is great enough, I will explore better ways of
+									installing DBBrowser on Windows systems in a future release.
+								</p>
+							</li>
+							<li>
+								<h4>dbbrowser.sh</h4>
+								<p>
+									A bash script to run the dbbrowser application.
+									from within a unix environment.  (This script
+									was tested on Linux and may require modifications
+									for other unix variants.)
+								</p>
+							</li>
+							<li>
+								<h4>us.pcsw.dbbrowser.jar</h4>
+								<p>JAR containing the dbbrowser application</p>
+							</li>
+							<li>
+								<h4><s>us.pcsw.utillib.jar</s></h4>
+								<p>
+									JAR containing the PC Software utilities libarary.
+								</p>
+								<p>
+									<strong>Note:</strong> Because DBBrowser has been moved
+									to berlios, the classes needed by DBBrowser that
+									resided in utillib have been branched and included in
+									DBBrowser's source and jar.
+								</p>
+							</li>
+							<li>
+								<h4>ui.jar</h4>
+								<p>
+									A library provided by Apple that provides OS X
+									integration.  Because some of the interfaces in this
+									library are implemented by DBBrowser classes, this
+									library is needed even if you are running DBBrowser on
+									non-Apple platforms.  I believe that I will be able
+									to work around this dependency soon.  This archive is
+									not needed by Mac OS X users as it comes with Apple's
+									Java runtime.
+								</p>
+							</li>
+						</ul>
+
+						<h3>Installing the JDBC Drivers</h3>
+						<p>
+							JDBC drivers for MSSQL 2000, MySQL, Oracle, and PostgreSQL are
+							all included in the directory jdbc_drivers:
+						</p>
+						
+						<ul class="no-bullets" id="driver-list">
+							<li>
+								<h4>mssql\</h4>
+								<p>
+									A directory containing Microsoft's MSSQL 2000 JDBC drivers.
+								</p>
+								<p class="annotation italic">
+									<strong>NOTE</strong> There is an open source driver,
+									available from http://jtds.sourceforge.net/ which
+									allows connections to Microsoft SQL Server
+									versions 6.5 to 2000.  However, I have not yet
+									finished testing the driver with DB Browser.  It
+									appears to work well enough except that the
+									database metadata returned from it does not always
+									produce the expected results; causing incorrect
+									output in the DB structure viewer.  Our MSSQL
+									driver does not yet support this driver, though
+									the generic JDBC driver will.
+								</p>
+							</li>
+							<li>
+								<h4>mysql_connector-java-3.0.8-stable-bin.jar</h4>
+								<p>
+									A JAR containing MySQL JDBC drivers.
+								</p>
+							</li>
+							<li>
+								<h4>oracle\</h4>
+								<p>
+									A directory containing the two zip archives that are the
+									Oracle JDBC drivers.
+								</p>
+							</li>
+							<li>
+								<h4>pgjdbc2.jar</h4>
+								<p>
+									A JAR containing the PostgreSQL libraries.
+								</p>
+								<p class="annotation italic">
+									<strong>NOTE</strong> Despite the fact that this driver
+									will return a list of all available catalogs,
+									it does not return metadata for objects within
+									catalogs other than the one currently connected.
+									Therefore, only the currently connected catalog is
+									shown in the DB structure viewer.
+								</p>
+							</li>
+						</ul>
+						
+						<h3>Running DBBrowser for the First Time</h3>
+						<p>
+							The DB Browser tries to load application preferences from a
+							file called .dbbrowser.cfg (the dot before dbbrowser.cfg is
+							significant) located in the user's home directory.  If this
+							file is not found, the application will fall back to
+							reasonable defaults.  You may change these default settings.
+							Do this by selecting the Edit->Preferences menu item.
+						</p >
+						<p>
+							A quick note about the Cache size preference.  When a select
+							statement is executed, the application only gets as many rows
+							as this preference indicates; until more is needed.  For
+							example, if the Cache size is set at 1000 (the default) and a
+							query is run that contains 4000 rows, only the first 1000 rows
+							will be loaded to start with.  After the user scrolls beyond
+							the first 1000 rows, the next 1000 rows will be loaded; and so
+							forth until all results are loaded.  In the preferences
+							dialog, a slider indicates how many rows to Fetch (cache) at a
+							time.  The two extremes, 0 and infinity do the same; all rows
+							are cached.  For very large resultsets, this may cause a long
+							period of time to pass before results are shown because of the
+							time it takes to populate the results table.  Also this may
+							cause larger amounts of memory to be used by DB Browser than
+							what is needed.  As a general rule, it is wizer to use select
+							statements with more limiting WHERE clauses whenever possible.
+						</p >
+						<h3>Final Notes</h3>
+						<p>
+							This application has been tested primarily on a Linux platform using
+							Sun's Java 1.4.0, 1.4.1, 1.4.2, and 1.5.0 runtimes.  However, I have
+							tried to create an application that will be usefull for all
+							platforms which have a Java runtime of version 1.4.0 or better.
+							If you have any constructive suggestions on how I can make
+							DB Browser better, please let me know.
+						</p>
+						<p>Enjoy!<br/>
+						Philip A. Chapman
+						</p>
+					<p id="copyright">
+	&copy; 2004 PCSW.us
+</p>
+	</body>
+</html>

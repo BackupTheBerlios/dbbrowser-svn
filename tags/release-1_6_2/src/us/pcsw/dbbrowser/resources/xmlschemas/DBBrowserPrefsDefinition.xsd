@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="xml">
+		<xs:unique name="uniqueConnectionProvider">
+      		<xs:selector xpath="./ConnectionProviderList/ConnectionProvider"/>
+      		<xs:field xpath="@name"/>
+    	</xs:unique>
+		<xs:complexType>
+			<xs:element name="CachePageSize" type="xs:integer"/>
+			<xs:element name="ConnectionProviderList">
+				<xs:complexType>
+					<xs:element name="ConnectionProvider" maxOccurs="unbounded">
+						<xs:complexType>
+							<xs:attribute name="name" type="xs:string" use="required"/>
+							<xs:attribute name="class" type="xs:string" use="required"/>
+						</xs:complexType>
+					</xs:element>
+				</xs:complexType>
+			</xs:element>			<xs:element name="DBBrowserBounds" maxOccurs="1">				<xs:complexType>					<xs:attribute name="Height" type="xs:integer" use="required"/>					<xs:attribute name="Left" type="xs:integer" use="required"/>					<xs:attribute name="Top" type="xs:integer" use="required"/>					<xs:attribute name="Width" type="xs:integer" use="required"/>				</xs:complexType>			</xs:element>			<xs:element name="DBViewBounds" maxOccurs="1">				<xs:complexType>					<xs:attribute name="Height" type="xs:integer" use="required"/>					<xs:attribute name="Left" type="xs:integer" use="required"/>					<xs:attribute name="Top" type="xs:integer" use="required"/>					<xs:attribute name="Width" type="xs:integer" use="required"/>				</xs:complexType>			</xs:element>			<xs:element name="DisplayToolbarLabels" type="xs:boolean"/>
+			<xs:element name="IgnoreSelectedText" type="xs:boolean"/>
+			<xs:element name="RepresentationForNull" type="xs:string"/>
+			<xs:element name="SQLFontName" type="xs:string"/>
+			<xs:element name="SQLFontSize" type="xs:integer"/>
+			<xs:element name="SQLTabSize" type="xs:integer"/>			<xs:element name="StoreConnectionSecrets" type="xs:boolean"/>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

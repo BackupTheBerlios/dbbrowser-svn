@@ -1,0 +1,142 @@
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<title>DBBrowser - Change List</title>
+		<link rel="stylesheet" href="css/documentation.css" type="text/css"></link>
+	</head>
+	<body>
+		<div id="header">
+			<center><h1>DBBrowser Change List</h1></center>
+		</div>
+		<a href="http://dbbrowser.berlios.de">Go to the DBBrowser Website</a>
+		<div id="divx.x.x">
+			<a id="vx.x.x"></a>
+			<center><h2>Version x.x.x</h2></center>
+			<ul>
+				<li>
+					Added a command line option (-s) that will run a bean
+					shell script before DBBrowser is initialized.
+				</li>
+				<li>
+					Fixed a bug where the resultset used by cached resultset
+					table models where being closed prematurely.
+				</li>
+			</ul>
+		</div>
+		<div id="div1.6.0">
+			<a id="v1.6.0"></a>
+			<center><h2>Version 1.6.0</h2></center>
+			<ul>
+				<li>
+					Scripting support was added.  Now, not only can you
+					run SQL statements in DBBrowser, but also
+					<a href="http://beanshell.org">BeanShell</a> scripts.  See
+					<a href="scripting.html">the scripting manual pages</a>
+					for more information.
+				</li>
+			</ul>
+		</div>
+		<div id="div1.5.2">
+			<a id="v1.5.2"></a>
+			<center><h2>Version 1.5.2</h2></center>
+			<ul>
+				<li>
+					Fixed a bug in the statement history dialog where the
+					close button did not close the dialog.
+				</li>
+				<li>
+					More bugfixes in the import tool.  It seems to be stable
+					now, but could still use a good bit of real-world testing.
+					I would like to add support for more file formats in a
+					future version.
+ 				</li>
+				<li>
+					Added support for exporting query results into Microsoft
+					Excel format thanks to use of the
+					<a href="http://jakarta.apache.org/poi/">poi library</a>.
+ 				</li>
+ 			</ul>
+ 		</div>
+		<div id="div1.5.1">
+			<a id="v1.5.1"></a>
+			<center><h2>Version 1.5.1</h2></center>
+			<ul>
+				<li>
+					Fixed a bug where an error was thrown when loading
+					connection setting that has a parameters with no value.
+ 				</li>
+ 			</ul>
+ 		</div>
+		<div id="div1.5.0">
+			<a id="v1.5.0"></a>
+			<center><h2>Version 1.5.0</h2></center>
+			<ul>
+				<li>
+					Fixed a bug where an error is sometimes thrown when the
+					user attempts to open an SQL script file.
+				</li>
+				<li>
+					Added support for SSL when making connections to
+					PostgreSQL databases.  When the PostgreSQL provider is
+					selected, there is a new database connection parameter
+					called &quot;SSL Options&quot;.  The option &quot;Do Not
+					Use SSL&quot; is the default option.  When this is
+					selected, SSL will not be used.  The next option,
+					&quot;Use SSL And Verify Certificate&quot; will force the
+					use of SSL and the server's certificate will be verified
+					with the appropriate certificate authority.  The last
+					option, &quot;Use SSL And Do Not Verify Certificate&quot;
+					will force the use of SSL, but the server's certificate
+					will not be verified.  This is not as secure as verifying
+					the certificate.  However, it can be useful if the client
+					machine does not have internet access or the server is
+					using a self-signed certificate (presumably for testing,
+					not production).
+				</li>
+				<li>
+					The schema for the XML document used to store connection
+					provider parameters was changed in order to support the
+					new PicklistConnectionParameter type.  DBBrowser is
+					backwards compatible and can read the old connection
+					provider files, but will use the new schema when writing
+					new ones.
+				</li>
+				<li>
+					A new subclass of connection parameter,
+					PicklistConnectionParameter was created.  This new
+					subclass can be used by connection providers to query the
+					user for a selection from within a defined set of options.
+					The options are shown in a combo box or a list, depending
+					on whether multiple selections are allowed.
+				</li>
+				<li>
+					Updated the version of the JTDS JDBC driver packaged with
+					DBBrowser to version 1.0.3 from 0.5.1.  Version 1.0.3 is
+					quite good and has been set to be used by default rather
+					than Microsoft's driver.  As a result, DBBrowser should
+					now support Microsoft SQL Server versions 6.5 and later.
+					(Microsoft's driver only supports versions 2000 and later)
+					It has been reported by users that DBBrowser supports
+					Microsoft SQL Server 7.0 well using this driver.  However,
+					Support of versions prior to 2000 has not been tested by
+					PCSW.us.
+				</li>
+				<li>
+					Bugfixes in the importer.
+				</li>
+				<li>
+					Changed the import tool to use the ostermillerutils.jar
+					library for parsing CSV files.  This gives far better
+					support than Java's StreamTokenizer class.
+				</li>
+				<li>
+					Added this change list and a menu option in the help
+					menu from which the user may access it.
+				</li>
+			</ul>
+		</div>
+		<a href="http://dbbrowser.berlios.de">Go to the DBBrowser Website</a>
+	</body>
+</html>
