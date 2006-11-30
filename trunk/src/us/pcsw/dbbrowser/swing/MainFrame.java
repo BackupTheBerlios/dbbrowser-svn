@@ -1289,8 +1289,21 @@ public class MainFrame extends javax.swing.JFrame implements java.awt.event.Acti
 				pane.setUI(ui);
 				
 				pane.setMinimumSize(new Dimension(50,100));
-				ConnectionPanel cp = createNewTab(null);
-				pane.addTab("Default  " , cp);
+				final ConnectionPanel cp = createNewTab(null);
+				
+				cp.addStatusListener(new StatusListener()
+				{
+					public void statusChanged(StatusEvent se)
+					{
+						if(se.getType() == StatusTypeEnum.CONNECTED)
+						{
+							int index = pane.indexOfComponent(cp);
+							pane.setTitleAt(index, (index + 1) + " " + cp.getConnectionProvider().getServerName());
+						}
+					}
+				});
+				
+				pane.addTab("Not Connected" , cp);
 				List l = new ArrayList();
 				l.add(cp);
 				panes.put(pane , l);
