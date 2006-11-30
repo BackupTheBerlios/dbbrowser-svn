@@ -82,6 +82,7 @@ import com.jgoodies.looks.plastic.Plastic3DLookAndFeel;
 import us.pcsw.dbbrowser.Preferences;
 import us.pcsw.dbbrowser.cp.ConnectionProvider;
 import us.pcsw.dbbrowser.event.StatusEvent;
+import us.pcsw.dbbrowser.event.StatusListener;
 import us.pcsw.dbbrowser.event.StatusTypeEnum;
 import us.pcsw.util.Debug;
 import us.pcsw.swing.HTMLDialog;
@@ -408,8 +409,19 @@ public class MainFrame extends javax.swing.JFrame implements java.awt.event.Acti
 		
 		pane.setMinimumSize(new Dimension(50,100));
 		
-		ConnectionPanel cp = createNewTab(null);
+		final ConnectionPanel cp = createNewTab(null);
 		pane.addTab("Not Connected" , cp);
+		cp.addStatusListener(new StatusListener()
+		{
+			public void statusChanged(StatusEvent se)
+			{
+				if(se.getType() == StatusTypeEnum.CONNECTED)
+				{
+					int index = pane.indexOfComponent(cp);
+					pane.setTitleAt(index, (index + 1) + " " + cp.getConnectionProvider().getServerName());
+				}
+			}
+		});
 		List l = new ArrayList();
 		l.add(cp);
 		panes.put(pane , l);

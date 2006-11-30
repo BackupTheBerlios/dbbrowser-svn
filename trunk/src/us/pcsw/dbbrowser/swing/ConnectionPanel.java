@@ -1034,10 +1034,23 @@ public class ConnectionPanel
   					else
   					{
   						provider = (ConnectionProvider) provider.clone();
-  						ConnectionPanel newPanel = mainFrame.createNewTab(provider);
-  						JTabbedPane tpane = 	mainFrame.getTabbedPaneFor(ConnectionPanel.this);
-  						tpane.addTab(newPanel.getConnectionProvider().getServerName(), newPanel);
+  						final ConnectionPanel newPanel = mainFrame.createNewTab(provider);
+  						final JTabbedPane tpane = 	mainFrame.getTabbedPaneFor(ConnectionPanel.this);
+  						tpane.addTab("Connecting", newPanel);
   						mainFrame.addTabMap(tpane , newPanel);
+  						
+  						newPanel.addStatusListener(new StatusListener()
+							{
+								public void statusChanged(StatusEvent se)
+								{
+									if(se.getType() == StatusTypeEnum.CONNECTED)
+									{
+										int index = tpane.indexOfComponent(newPanel);
+										tpane.setTitleAt(index, (index + 1) + " " + newPanel.getConnectionProvider().getServerName());
+									}
+								}
+							});
+  						
   						newPanel.connect();
   					}
   				}
