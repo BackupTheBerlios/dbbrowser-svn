@@ -1,13 +1,23 @@
 package us.pcsw.dbbrowser.swing.text;
 
+import java.awt.Color;
+import java.awt.EventQueue;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.io.StringReader;
 
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.Element;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
@@ -46,6 +56,39 @@ public class HighlightDocument extends DefaultStyledDocument
 		
 		if(type == JAVA_TYPE) lexer = new JavaLexer();
 		else lexer = new SqlLexer();
+		
+		pane.addCaretListener(new CaretListener()
+		{
+			public void caretUpdate(final CaretEvent e)
+			{
+				EventQueue.invokeLater(new Runnable(){
+					public void run()
+					{
+						paintLineHighlight(e.getDot());
+					}
+				});
+				
+			}
+		});
+		
+		
+		/*
+		pane.addKeyListener(new KeyAdapter()
+		{
+			public void keyReleased(KeyEvent e)
+			{
+				if(e.getKeyChar() ==  KeyEvent.CHAR_UNDEFINED)
+				{
+					EventQueue.invokeLater(new Runnable(){
+						public void run()
+						{
+							
+						}
+					});
+				}
+			}
+		});
+		*/
 	}
 	
 	public HighlightDocument(JTextPane pane , Lexer lexer)
@@ -72,6 +115,49 @@ public class HighlightDocument extends DefaultStyledDocument
 		{
 			e.printStackTrace();
 		}
+	}
+	
+	
+	int start , end;
+	int thisStart , thisEnd;
+	Color hl = new Color(173,216,230);
+	
+	public void paintLineHighlight(int aStart)
+	{
+		
+		try
+		{
+			thisStart = Utilities.getRowStart(pane, aStart);
+			thisEnd = Utilities.getRowEnd(pane, aStart);
+			if(thisStart == start && thisEnd == end) return;
+		}
+		catch (BadLocationException e1)
+		{
+			e1.printStackTrace();
+		}
+		
+		for(int i = start ; i < end ; i++)
+		{
+			Element e = getCharacterElement(i);
+			MutableAttributeSet mas = new SimpleAttributeSet(e.getAttributes());
+			StyleConstants.setBackground(mas, Color.WHITE);
+			setCharacterAttributes(e.getStartOffset() , e.getEndOffset() - e.getStartOffset() , mas , false);
+		}
+		
+			
+				start = thisStart;
+				end = thisEnd;
+				
+				
+				for(int i = start ; i < end ; i++)
+				{
+					Element e = getCharacterElement(i);
+					MutableAttributeSet mas = new SimpleAttributeSet(e.getAttributes());
+					StyleConstants.setBackground(mas, hl);
+					setCharacterAttributes(e.getStartOffset() , e.getEndOffset() - e.getStartOffset() , mas , false);
+				}
+				
+
 	}
 	
 	private synchronized void parseTokens(int offset , int len) throws BadLocationException, IOException
