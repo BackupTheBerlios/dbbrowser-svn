@@ -409,7 +409,7 @@ public class MainFrame extends javax.swing.JFrame implements java.awt.event.Acti
 		pane.setMinimumSize(new Dimension(50,100));
 		
 		ConnectionPanel cp = createNewTab(null);
-		pane.addTab("Default  " , cp);
+		pane.addTab("Not Connected" , cp);
 		List l = new ArrayList();
 		l.add(cp);
 		panes.put(pane , l);

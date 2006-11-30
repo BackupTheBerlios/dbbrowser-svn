@@ -1036,8 +1036,9 @@ public class ConnectionPanel
   						provider = (ConnectionProvider) provider.clone();
   						ConnectionPanel newPanel = mainFrame.createNewTab(provider);
   						JTabbedPane tpane = 	mainFrame.getTabbedPaneFor(ConnectionPanel.this);
-  						tpane.addTab("Teh", newPanel);
+  						tpane.addTab(newPanel.getConnectionProvider().getServerName(), newPanel);
   						mainFrame.addTabMap(tpane , newPanel);
+  						newPanel.connect();
   					}
   				}
   			});
