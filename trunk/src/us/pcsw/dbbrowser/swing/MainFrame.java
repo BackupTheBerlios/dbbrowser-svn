@@ -1247,7 +1247,7 @@ public class MainFrame extends javax.swing.JFrame implements java.awt.event.Acti
 		menuBar.add(view);
 
 		
-		JMenuItem newDoc = new JMenuItem("New Doc" , KeyEvent.VK_N);
+		JMenuItem newDoc = new JMenuItem("New Workspace" , KeyEvent.VK_N);
 		
 		newDoc.addActionListener(new ActionListener()
 		{
