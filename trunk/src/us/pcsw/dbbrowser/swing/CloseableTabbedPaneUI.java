@@ -61,7 +61,7 @@ public class CloseableTabbedPaneUI extends BasicTabbedPaneUI
 	protected class PlafLayout extends TabbedPaneLayout
 	{
 
-		Vector<CloseButton> closeButtons = new Vector<CloseButton>();
+		Vector closeButtons = new Vector();
 
 		public void layoutContainer(Container parent)
 		{
