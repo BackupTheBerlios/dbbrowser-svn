@@ -271,10 +271,10 @@ public class MainFrame extends javax.swing.JFrame implements java.awt.event.Acti
 						{
 								Component aComp = tp.getComponentAt(press);
 							
-								tp.removeTabAt(press);
-							
-								aPane.add("New" , aComp);
-							
+								aPane.add(tp.getTitleAt(press) , aComp);
+								
+								//tp.remove(press);
+								
 								aPane.setSelectedComponent(aComp);
 							
 								System.out.println("DID ITTTT");
