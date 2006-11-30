@@ -419,6 +419,7 @@ public class MainFrame extends javax.swing.JFrame implements java.awt.event.Acti
 				{
 					int index = pane.indexOfComponent(cp);
 					pane.setTitleAt(index, (index + 1) + " " + cp.getConnectionProvider().getServerName());
+					pane.setMnemonicAt(index, pane.getTitleAt(index).charAt(0));
 				}
 			}
 		});
@@ -1299,6 +1300,7 @@ public class MainFrame extends javax.swing.JFrame implements java.awt.event.Acti
 						{
 							int index = pane.indexOfComponent(cp);
 							pane.setTitleAt(index, (index + 1) + " " + cp.getConnectionProvider().getServerName());
+							pane.setMnemonicAt(index, pane.getTitleAt(index).charAt(0));
 						}
 					}
 				});

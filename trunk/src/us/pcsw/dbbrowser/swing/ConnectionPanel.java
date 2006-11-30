@@ -1047,6 +1047,7 @@ public class ConnectionPanel
 									{
 										int index = tpane.indexOfComponent(newPanel);
 										tpane.setTitleAt(index, (index + 1) + " " + newPanel.getConnectionProvider().getServerName());
+										tpane.setMnemonicAt(index, tpane.getTitleAt(index).charAt(0));
 									}
 								}
 							});
