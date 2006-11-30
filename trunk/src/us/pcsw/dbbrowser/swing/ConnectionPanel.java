@@ -532,7 +532,11 @@ public class ConnectionPanel
 				db.close();
 			} catch (SQLException sqle) {}
 			db = null;
-			sPane.setTopComponent(loginPane);
+			//sPane.setTopComponent(loginPane);
+			//stmtPane.setVisible(false);
+			stmtPaneScrollPane.setVisible(false);
+			loginPane.setVisible(true);
+			
 			notifyStatusListeners(new StatusEvent(this, StatusTypeEnum.DISCONNECTED));
 		}
 	}
@@ -978,6 +982,8 @@ public class ConnectionPanel
     	JButton saveResult = new JButton(new ImageIcon(getClass().getResource("/us/pcsw/dbbrowser/resources/images/save_result.png")));
     	JButton viewStruct = new JButton(new ImageIcon(getClass().getResource("/us/pcsw/dbbrowser/resources/images/view_tree.png")));
     	JButton cloneButton = new JButton(new ImageIcon(getClass().getResource("/us/pcsw/dbbrowser/resources/images/clone.png")));	
+    	JButton disconnectButton = new JButton(new ImageIcon(getClass().getResource("/us/pcsw/dbbrowser/resources/images/discon.png")));
+    	
     	
     	executeButton.addActionListener(this);
     	cancelButton.addActionListener(this);
@@ -1037,6 +1043,14 @@ public class ConnectionPanel
   			});
     	
     	
+    	disconnectButton.addActionListener(new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					closeDatabaseConnection();
+				}
+			});
+    	
     	executeButton.setToolTipText("Execute Query");
     	cancelButton.setToolTipText("Cancel");
     	clearButton.setToolTipText("Clear");
@@ -1045,9 +1059,9 @@ public class ConnectionPanel
     	saveResult.setToolTipText("Save Results");
     	viewStruct.setToolTipText("View DB Structure");
     	cloneButton.setToolTipText("Clone Connection");
+    	disconnectButton.setToolTipText("Disconnect");
     	
-    	
-    	JButton[] buttons = new JButton[]{executeButton,cancelButton,clearButton,openButton,saveButton,saveResult , viewStruct ,cloneButton };
+    	JButton[] buttons = new JButton[]{executeButton,cancelButton,clearButton,openButton,saveButton,saveResult , viewStruct ,cloneButton,disconnectButton };
     	
     	Bag bag = new Bag();
     	
