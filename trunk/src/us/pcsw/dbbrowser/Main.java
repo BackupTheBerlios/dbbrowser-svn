@@ -150,7 +150,6 @@ public final class Main
 			// command-line switches.
 			usageErr();
 		} catch (Exception e) {
-			e.printStackTrace();
 		    System.err.println("There was an unexpected error starting the DB Browser application.\n");
 		    System.err.println(e.getMessage());
 	    	Debug.log(e);

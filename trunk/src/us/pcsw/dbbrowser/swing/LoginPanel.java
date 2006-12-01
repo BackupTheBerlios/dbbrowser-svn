@@ -184,13 +184,10 @@ final class LoginPanel
 		openButton.setToolTipText("Load saved connection parameters");
 		openButton.addActionListener(this);
 		panel.add(openButton);
-		//buttonPanel.add(panel, BorderLayout.WEST);
+		buttonPanel.add(panel, BorderLayout.WEST);
 		
 		panel = new JPanel();
 		panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		
-		panel.add(openButton);
-		
 		okButton = new JButton("Connect");
 		okButton.setMnemonic('n');
 		okButton.addActionListener(this);

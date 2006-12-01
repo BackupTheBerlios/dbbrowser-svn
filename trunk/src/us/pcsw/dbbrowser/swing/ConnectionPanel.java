@@ -29,7 +29,6 @@ import us.pcsw.dbbrowser.SQLExecutionResults;
 import us.pcsw.dbbrowser.SQLExecutionWorker;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -40,7 +39,6 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
 import java.io.BufferedReader;
@@ -62,7 +60,6 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.Vector;
 
-import javax.swing.BorderFactory;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -79,7 +76,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
 import javax.swing.event.CaretEvent;
@@ -87,7 +83,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 
-import javax.swing.plaf.BorderUIResource;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -95,8 +90,6 @@ import javax.swing.text.TabSet;
 import javax.swing.text.TabStop;
 
 import javax.swing.undo.UndoManager;
-
-import com.sun.org.apache.bcel.internal.generic.IINC;
 
 import bsh.EvalError;
 import bsh.TargetError;
@@ -117,7 +110,6 @@ import us.pcsw.util.tablemodelexport.TableModelExport;
 
 import us.pcsw.swing.BasicFileFilter;
 import us.pcsw.swing.SearchAndReplaceDialog;
-import us.pcsw.swing.ToolbarButton;
 
 /**
  * us.pcsw.dbbrowser.swing.ConnectionPanel
@@ -333,6 +325,7 @@ public class ConnectionPanel
 	
 	// Gui Elements
 	private LoginPanel loginPane;
+	private JSplitPane outputSplitPane;
 	private JTabbedPane outputTabbedPane;
 	private JTextPane shellOutputPane;
 	private JScrollPane shellOutputScrollPane;
@@ -357,17 +350,14 @@ public class ConnectionPanel
 	
 	private ExecutionWorker worker;
 
-		private MainFrame mainFrame;
-	
 	/**
 	 * Constructor to initialize the Panel.
 	 * @param cp the connection provider to use to connect to the DB.
 	 */
 	public ConnectionPanel
-		(ConnectionProvider cp , MainFrame mainFrame)
+		(ConnectionProvider cp)
 	{
 		this.provider = cp;
-		this.mainFrame = mainFrame;
 		historyList = new HistoryListModel();
 		historySelection = new DefaultListSelectionModel();
 		historySelection.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -518,7 +508,7 @@ public class ConnectionPanel
 		sb.append(++xPos);
 		sb.append('/');
 		sb.append(++yPos);
-		//positionLabel.setText(sb.toString());
+		positionLabel.setText(sb.toString());
 	}
 	
 	/**
@@ -532,11 +522,7 @@ public class ConnectionPanel
 				db.close();
 			} catch (SQLException sqle) {}
 			db = null;
-			//sPane.setTopComponent(loginPane);
-			//stmtPane.setVisible(false);
-			stmtPaneScrollPane.setVisible(false);
-			loginPane.setVisible(true);
-			
+			sPane.setTopComponent(loginPane);
 			notifyStatusListeners(new StatusEvent(this, StatusTypeEnum.DISCONNECTED));
 		}
 	}
@@ -561,17 +547,14 @@ public class ConnectionPanel
 			notifyStatusListeners
 				(new StatusEvent(this, StatusTypeEnum.BUSY));
 			db = provider.getConnection();
-			//sPane.setTopComponent(topPane);
+			sPane.setTopComponent(topPane);
 			notifyStatusListeners(new StatusEvent(this, StatusTypeEnum.CONNECTED));
 			setMessage("Connection Successful.", false);
-			loginPane.setVisible(false);
-			stmtPaneScrollPane.setVisible(true);
 			notifyStatusListeners
 				(new StatusEvent(this, StatusTypeEnum.NOT_BUSY));
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		} catch (Throwable t) {
 			// Unable to connect.
-			t.printStackTrace();
 			displayDBConnectError(t);
 			notifyStatusListeners
 				(new StatusEvent(this, StatusTypeEnum.NOT_BUSY));
@@ -608,7 +591,7 @@ public class ConnectionPanel
 		cancelButton.setEnabled(! (worker instanceof SQLExecutionWorker));
 		executeButton.setEnabled(b && timer == null);
 		clearButton.setEnabled(b);
-		//testButton.setEnabled(Debug.on() && b);
+		testButton.setEnabled(Debug.on() && b);
 
 		notifyStatusListeners(new StatusEvent(this, ste));
 	}
@@ -937,199 +920,6 @@ public class ConnectionPanel
 		hld.setVisible(true);
     }
 
-    
-    private JPanel initConnectionPanel()
-    {
-    	JPanel panel = new JPanel(new GridBagLayout());
-    	
-  		stmtPane = new JTextPane();
-  		
-  		HighlightDocument doc = new HighlightDocument(stmtPane , HighlightDocument.SQL_TYPE);
-  		
-  		stmtPane.setDocument(doc);
-  		stmtPane.setDragEnabled(true);
-  		stmtPane.addCaretListener(this);
-  		stmtPane.addKeyListener(this);
-  		stmtPane.getDocument().addUndoableEditListener(sqlUndoMgr);
-  		
-  		stmtPaneScrollPane = new JScrollPane(stmtPane);
-  		
-  		loginPane = new LoginPanel(provider, false);
-  		loginPane.addActionListener(this);
-  		
-  		Bag bag = new Bag();
-  		
-  		panel.add(initActionsPanel() , bag.fillX());
-  		panel.add(stmtPaneScrollPane , bag.nextY().fillBoth());
-  		panel.add(loginPane , bag);
-  		
-  		stmtPaneScrollPane.setVisible(false);
-  		
-  		return panel;
-    }
-    
-    
-    private JPanel initActionsPanel()
-    {
-    	JPanel panel = new JPanel(new GridBagLayout());
-    	
-    	executeButton = new JButton(new ImageIcon(getClass().getResource("/us/pcsw/dbbrowser/resources/images/exec.png")));
-    	cancelButton = new JButton(new ImageIcon(getClass().getResource("/us/pcsw/dbbrowser/resources/images/cancel.png")));
-    	clearButton = new JButton(new ImageIcon(getClass().getResource("/us/pcsw/dbbrowser/resources/images/clear.png")));
-    	
-    	JButton openButton = new JButton(new ImageIcon(getClass().getResource("/us/pcsw/dbbrowser/resources/images/fileopen.png")));
-    	JButton saveButton = new JButton(new ImageIcon(getClass().getResource("/us/pcsw/dbbrowser/resources/images/save_query.png")));
-    	JButton saveResult = new JButton(new ImageIcon(getClass().getResource("/us/pcsw/dbbrowser/resources/images/save_result.png")));
-    	JButton viewStruct = new JButton(new ImageIcon(getClass().getResource("/us/pcsw/dbbrowser/resources/images/view_tree.png")));
-    	JButton cloneButton = new JButton(new ImageIcon(getClass().getResource("/us/pcsw/dbbrowser/resources/images/clone.png")));	
-    	JButton disconnectButton = new JButton(new ImageIcon(getClass().getResource("/us/pcsw/dbbrowser/resources/images/discon.png")));
-    	
-    	
-    	executeButton.addActionListener(this);
-    	cancelButton.addActionListener(this);
-    	clearButton.addActionListener(this);
-    	
-    	saveButton.addActionListener(new ActionListener()
-			{
-				public void actionPerformed(ActionEvent e)
-				{
-					saveFile();
-				}
-			});
-    	
-    	saveResult.addActionListener(new ActionListener()
-			{
-				public void actionPerformed(ActionEvent e)
-				{
-					saveResultSet();
-				}
-			});
-    	
-    	openButton.addActionListener(new ActionListener()
-			{
-				public void actionPerformed(ActionEvent e)
-				{
-					loadFile();
-				}
-			});
-    	
-    	viewStruct.addActionListener(new ActionListener()
-			{
-				public void actionPerformed(ActionEvent e)
-				{
-					
-				}
-			});
-    	
-    	cloneButton.addActionListener(new ActionListener()
-  		{
-  			public void actionPerformed(ActionEvent e)
-  			{
-  					ConnectionProvider provider = getConnectionProvider();
-  					if (provider == null)
-  					{
-  						JOptionPane.showMessageDialog(null, "The currently selected tab does not have an open connection.", "Connection Cannot Be Cloned",
-  								JOptionPane.WARNING_MESSAGE);
-  					}
-  					else
-  					{
-  						provider = (ConnectionProvider) provider.clone();
-  						final ConnectionPanel newPanel = mainFrame.createNewTab(provider);
-  						final JTabbedPane tpane = 	mainFrame.getTabbedPaneFor(ConnectionPanel.this);
-  						tpane.addTab("Connecting", newPanel);
-  						mainFrame.addTabMap(tpane , newPanel);
-  						
-  						newPanel.addStatusListener(new StatusListener()
-							{
-								public void statusChanged(StatusEvent se)
-								{
-									if(se.getType() == StatusTypeEnum.CONNECTED)
-									{
-										int index = tpane.indexOfComponent(newPanel);
-										tpane.setTitleAt(index, (index + 1) + " " + newPanel.getConnectionProvider().getServerName());
-										tpane.setMnemonicAt(index, tpane.getTitleAt(index).charAt(0));
-									}
-								}
-							});
-  						
-  						newPanel.connect();
-  					}
-  				}
-  			});
-    	
-    	
-    	disconnectButton.addActionListener(new ActionListener()
-			{
-				public void actionPerformed(ActionEvent e)
-				{
-					closeDatabaseConnection();
-				}
-			});
-    	
-    	executeButton.setToolTipText("Execute Query");
-    	cancelButton.setToolTipText("Cancel");
-    	clearButton.setToolTipText("Clear");
-    	openButton.setToolTipText("Open File");
-    	saveButton.setToolTipText("Save Query");
-    	saveResult.setToolTipText("Save Results");
-    	viewStruct.setToolTipText("View DB Structure");
-    	cloneButton.setToolTipText("Clone Connection");
-    	disconnectButton.setToolTipText("Disconnect");
-    	
-    	JButton[] buttons = new JButton[]{executeButton,cancelButton,clearButton,openButton,saveButton,saveResult , viewStruct ,cloneButton,disconnectButton };
-    	
-    	Bag bag = new Bag();
-    	
-    	Dimension dim = new Dimension(20,20);
-    	
-    	for(int i = 0 ; i < buttons.length ; i++)
-    	{
-    		buttons[i].setMargin(new Insets(0,0,0,0));
-    		buttons[i].setPreferredSize(dim);
-    		buttons[i].setMinimumSize(dim);
-    		buttons[i].setMaximumSize(dim);
-    		buttons[i].setBorderPainted(false);
-    		panel.add(buttons[i] , bag.nextX());
-    	}
-    	
-    	panel.add(Bag.spacer() , bag.nextX().fillX());
-    	
-    	return panel;
-    }
-    
-    
-    private JTabbedPane initOutputTabbedPane()
-    {
-    	outputTabbedPane = new JTabbedPane();
-  		outputTabbedPane.add(new ResultSetPanel(), RESULTS_TAB_PREFIX + "1");
-  		outputTabbedPane.setMnemonicAt(0, 'R');
-  		
-  		shellOutputScrollPane = new JScrollPane(shellOutputPane);
-  		outputTabbedPane.add(shellOutputScrollPane, "Shell Output");
-  		outputTabbedPane.setMnemonicAt(1, 'O');
- 
-  		
-  		JPanel msgPanel = new JPanel();
-  		msgPanel.setLayout(new BorderLayout());
-  	
-  		msgIconLabel = new JLabel();
-  		msgIconLabel.setHorizontalAlignment(JLabel.CENTER);
-  		msgIconLabel.setVerticalAlignment(JLabel.CENTER);
-  		msgIconLabel.setPreferredSize(new Dimension(64, 64));
-  		msgPanel.add(msgIconLabel, BorderLayout.WEST);
-  	
-  		msgArea = new JTextArea();
-  		msgArea.setEditable(false);
-  		msgArea.addKeyListener(this);
-  		msgAreaPane = new JScrollPane();
-  		msgAreaPane.setViewportView(msgArea);
-  		msgPanel.add(msgAreaPane, BorderLayout.CENTER);
-  		outputTabbedPane.addTab("Messages", msgPanel);
-  		
-  		return outputTabbedPane;
-    }
-    
-    
     /**
      * Initialize the GUI interface.
      * */
@@ -1137,46 +927,114 @@ public class ConnectionPanel
     {
 		// Frame Contents
 		setLayout(new BorderLayout());
-		
-			
-		sPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT , initConnectionPanel() , initOutputTabbedPane());
+		sPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		sPane.setOneTouchExpandable(true);
+		JPanel cPane = new JPanel();
+		cPane.setLayout(new BorderLayout());
 		
+		GridBagLayout gbLayout = new GridBagLayout();
+		GridBagConstraints c = new GridBagConstraints();
 		
-		
-		/*
-		// Clone Connection button
-		Icon icon = new ImageIcon(getClass().getClassLoader().getResource("us/pcsw/dbbrowser/resources/images/CloneConnection.png"));
-		JButton toolbarCloneConnection = new ToolbarButton("Clone Connection", icon);
-		toolbarCloneConnection.setBorderPainted(false);
-		toolbarCloneConnection.setToolTipText("Clone the Current Connection");
-		// toolbarCloneConnection.setDisabledIcon(disabledIcon);
-		toolbarCloneConnection.setVerticalTextPosition(SwingConstants.BOTTOM);
-		toolbarCloneConnection.setHorizontalTextPosition(SwingConstants.CENTER);
-		toolbarCloneConnection.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-					ConnectionProvider provider = getConnectionProvider();
-					if (provider == null)
-					{
-						JOptionPane.showMessageDialog(null, "The currently selected tab does not have an open connection.", "Connection Cannot Be Cloned",
-								JOptionPane.WARNING_MESSAGE);
-					}
-					else
-					{
-						provider = (ConnectionProvider) provider.clone();
-						System.err.println(mainFrame.getTabbedPaneFor(ConnectionPanel.this) == null);
-						mainFrame.getTabbedPaneFor(ConnectionPanel.this).addTab("Teh", mainFrame.createNewTab(provider));
-					}
-				}
-			});
-
-		cPane.add(toolbarCloneConnection , c);
+		cPane.setLayout(gbLayout);
 	
+		// SQL statement edit area
+		stmtPane = new JTextPane();
 		
+		HighlightDocument doc = new HighlightDocument(stmtPane , HighlightDocument.SQL_TYPE);
 		
+		stmtPane.setDocument(doc);
 		
+		stmtPane.setDragEnabled(true);
+		stmtPane.addCaretListener(this);
+		stmtPane.addKeyListener(this);
+		stmtPane.getDocument().addUndoableEditListener(sqlUndoMgr);
+		stmtPaneScrollPane = new JScrollPane();
+		stmtPaneScrollPane.setVerticalScrollBarPolicy
+		    (JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		stmtPaneScrollPane.setHorizontalScrollBarPolicy
+		    (JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		stmtPaneScrollPane.setViewportView(stmtPane);
+		stmtPaneScrollPane.setPreferredSize(new Dimension(450,150));
+		
+		// Added
+		c.gridx = 0;
+		c.gridy = 0;
+		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1.0; 
+		c.weighty = 1.0; 
+		c.gridwidth = 2;
+		c.gridheight = 6;
+		gbLayout.setConstraints(stmtPaneScrollPane, c);
+		cPane.add(stmtPaneScrollPane);
+		
+		executeButton = new JButton("Execute");
+		executeButton.setMnemonic('x');
+		executeButton.setAlignmentX(CENTER_ALIGNMENT);
+		executeButton.addActionListener(this);
+		executeButton.setEnabled(false);
+		executeButton.addKeyListener(this);
+		
+		c.weightx = 0.0;
+		c.weighty = 0.0;
+		c.gridx = 2;
+		c.gridy = 0;
+		c.anchor = GridBagConstraints.NORTHWEST;
+		c.insets = new Insets(6, 5, 0, 5);
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.gridwidth = GridBagConstraints.RELATIVE; 
+		c.gridheight = 1; 
+		gbLayout.setConstraints(executeButton, c);
+		cPane.add(executeButton);
+
+		// cancel button
+		cancelButton = new JButton("Cancel");
+		cancelButton.setEnabled(true);
+		cancelButton.setMnemonic('a');
+		cancelButton.setAlignmentX(CENTER_ALIGNMENT);
+		cancelButton.addActionListener(this);
+		cancelButton.setEnabled(false);
+		cancelButton.addKeyListener(this);
+
+		c.gridy = GridBagConstraints.RELATIVE;
+		c.insets = new Insets(5, 5, 0, 5);
+				
+		gbLayout.setConstraints(cancelButton, c);
+		cPane.add(cancelButton);
+
+		// seperator
+		c.gridy = GridBagConstraints.RELATIVE;
+		c.insets = new Insets(5, 5, 0, 5);				
+		cPane.add(new JSeparator(JSeparator.HORIZONTAL), c);
+		
+		// clear button
+		clearButton = new JButton("Clear");
+		clearButton.setEnabled(true);
+		clearButton.setMnemonic('r');
+		clearButton.setAlignmentX(CENTER_ALIGNMENT);
+		clearButton.addActionListener(this);
+		clearButton.setEnabled(false);
+		clearButton.addKeyListener(this);
+
+		c.gridy = GridBagConstraints.RELATIVE;
+		c.insets = new Insets(5, 5, 0, 5);
+				
+		gbLayout.setConstraints(clearButton, c);
+		cPane.add(clearButton);
+
+		// test button
+		testButton = new JButton("Test");
+		testButton.setEnabled(false);
+		testButton.setMnemonic('T');
+		testButton.setVisible(Debug.on());
+		testButton.setAlignmentX(CENTER_ALIGNMENT);
+		testButton.addActionListener(this);
+		testButton.addKeyListener(this);
+
+		c.gridy = GridBagConstraints.RELATIVE;
+		c.insets = new Insets(5, 5, 0, 5);
+
+		gbLayout.setConstraints(testButton, c);
+		cPane.add(testButton);
 		
 		// line indicator
 		
@@ -1207,23 +1065,48 @@ public class ConnectionPanel
 				sPane.setTopComponent(loginPane);
 			}
 		}
-		*/
 
-		//outputSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-		//outputSplitPane.setOneTouchExpandable(true);
+		outputSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		outputSplitPane.setOneTouchExpandable(true);
 	
 		// Message area
+		JPanel msgPanel = new JPanel();
+		msgPanel.setLayout(new BorderLayout());
 	
+		msgIconLabel = new JLabel();
+		msgIconLabel.setHorizontalAlignment(JLabel.CENTER);
+		msgIconLabel.setVerticalAlignment(JLabel.CENTER);
+		msgIconLabel.setPreferredSize(new Dimension(64, 64));
+		msgPanel.add(msgIconLabel, BorderLayout.WEST);
 	
-		//outputSplitPane.setTopComponent(msgPanel);
+		msgArea = new JTextArea();
+		msgArea.setEditable(false);
+		msgArea.addKeyListener(this);
+		msgAreaPane = new JScrollPane();
+		msgAreaPane.setViewportView(msgArea);
+		msgPanel.add(msgAreaPane, BorderLayout.CENTER);
+	
+		outputSplitPane.setTopComponent(msgPanel);
 		
 		// Output
+		outputTabbedPane = new JTabbedPane();
+		outputTabbedPane.setTabPlacement(JTabbedPane.BOTTOM);
+		outputTabbedPane.add(new ResultSetPanel(), RESULTS_TAB_PREFIX + "1");
+		outputTabbedPane.setMnemonicAt(0, 'R');
 		
+		shellOutputPane = new JTextPane();
+		shellOutputScrollPane = new JScrollPane(shellOutputPane);
+		shellOutputScrollPane.setVerticalScrollBarPolicy
+			(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		shellOutputScrollPane.setHorizontalScrollBarPolicy
+			(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		shellOutputScrollPane.setPreferredSize(new Dimension(450,250));
+		outputTabbedPane.add(shellOutputScrollPane, "Shell Output");
+		outputTabbedPane.setMnemonicAt(1, 'O');
 		
-		//shellOutputPane = new JTextPane();
+		outputSplitPane.setBottomComponent(outputTabbedPane);
 		
-		
-		//sPane.setBottomComponent(outputTabbedPane);
+		sPane.setBottomComponent(outputSplitPane);
 
 		sPane.setDividerLocation(0.5);
 		sPane.setResizeWeight(0.5);
@@ -1594,6 +1477,13 @@ public class ConnectionPanel
 		msgArea.setText(message);
 		if (errorMessage) {
 			msgIconLabel.setIcon(errorIcon);
+			int i = outputSplitPane.getDividerLocation();
+			// if i == 1, the message area has been collapsed.
+			if (i == 1) { 
+				outputSplitPane.resetToPreferredSizes();
+			}
+		} else {
+			msgIconLabel.setIcon(infoIcon);
 		}
     }
 
@@ -1836,18 +1726,4 @@ public class ConnectionPanel
 		notifyStatusListeners(new StatusEvent(this, se.getType(), se.getDescription(), se.getSource()));
 		setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
-
-	public boolean equals(Object obj)
-	{
-		return obj == this;
-	}
-
-	public int hashCode()
-	{
-		return  getTitle().hashCode();
-	}
-
-
-    
-
 }

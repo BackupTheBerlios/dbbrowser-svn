@@ -2081,7 +2081,7 @@ public class SqlLexer implements Lexer {
 
 	/* styles */
 	
-	public static final byte PLAIN_STYLE = 1;
+	public static final	byte PLAIN_STYLE = 1;
 	public static final byte KEYWORD_STYLE = 2;
 	public static final byte DATA_STYLE = 3;
 	public static final byte OPERATOR_STYLE = 4;
@@ -2125,7 +2125,7 @@ public class SqlLexer implements Lexer {
   	StyleConstants.setForeground(data, Color.BLACK);
 		  	
   	Style literal = new StyleImpl("literal");
-  	StyleConstants.setForeground(literal , new Color(66,16,194));
+  	StyleConstants.setForeground(literal , new Color(0,0,128));
   	
   	attsMap.put(Byte.valueOf(PLAIN_STYLE) , plain);
   	attsMap.put(Byte.valueOf(KEYWORD_STYLE) , keyword);
