@@ -102,7 +102,7 @@ import us.pcsw.dbbrowser.event.ElapsedTimeEventTimer;
 import us.pcsw.dbbrowser.event.StatusEvent;
 import us.pcsw.dbbrowser.event.StatusListener;
 import us.pcsw.dbbrowser.event.StatusTypeEnum;
-import us.pcsw.dbbrowser.swing.text.HighlightDocument;
+//TODO import us.pcsw.dbbrowser.swing.text.HighlightDocument;
 
 import us.pcsw.util.Debug;
 
@@ -940,9 +940,9 @@ public class ConnectionPanel
 		// SQL statement edit area
 		stmtPane = new JTextPane();
 		
-		HighlightDocument doc = new HighlightDocument(stmtPane , HighlightDocument.SQL_TYPE);
+//TODO		HighlightDocument doc = new HighlightDocument(stmtPane , HighlightDocument.SQL_TYPE);
 		
-		stmtPane.setDocument(doc);
+//TODO		stmtPane.setDocument(doc);
 		
 		stmtPane.setDragEnabled(true);
 		stmtPane.addCaretListener(this);
@@ -1288,8 +1288,8 @@ public class ConnectionPanel
 	void reloadPreferences()
 	{
 		int ts = Preferences.getSQLTabSize();
-		HighlightDocument doc = (HighlightDocument)stmtPane.getStyledDocument();
-		doc.setTabs(ts);
+//TODO		HighlightDocument doc = (HighlightDocument)stmtPane.getStyledDocument();
+//TODO		doc.setTabs(ts);
 	}
 
 	/**

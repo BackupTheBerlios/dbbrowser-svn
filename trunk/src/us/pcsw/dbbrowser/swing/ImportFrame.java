@@ -212,6 +212,7 @@ public class ImportFrame extends JFrame
 					break;
 				}
 			}
+			skipColumnCheck.setSelected(false);
 		}
 	}
 	
