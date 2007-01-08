@@ -21,6 +21,11 @@
  */
 package us.pcsw.dbbrowser.swing;
 
+import syntax.Gutter;
+import syntax.SimpleStyle;
+import syntax.SyntaxDocument;
+import syntax.SyntaxTextUI;
+import syntax.lexers.SQLLexer;
 import us.pcsw.dbbrowser.ExecutionWorker;
 import us.pcsw.dbbrowser.HistoryListModel;
 import us.pcsw.dbbrowser.Preferences;
@@ -29,9 +34,11 @@ import us.pcsw.dbbrowser.SQLExecutionResults;
 import us.pcsw.dbbrowser.SQLExecutionWorker;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Frame;
 import java.awt.GridBagLayout;
@@ -53,9 +60,11 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.Vector;
@@ -102,7 +111,6 @@ import us.pcsw.dbbrowser.event.ElapsedTimeEventTimer;
 import us.pcsw.dbbrowser.event.StatusEvent;
 import us.pcsw.dbbrowser.event.StatusListener;
 import us.pcsw.dbbrowser.event.StatusTypeEnum;
-//TODO import us.pcsw.dbbrowser.swing.text.HighlightDocument;
 
 import us.pcsw.util.Debug;
 
@@ -334,7 +342,7 @@ public class ConnectionPanel
 	private JPanel topPane;
 	
 	// SQL statement edit area
-	private JTextPane stmtPane;
+	private JTextArea stmtPane;
 	private JScrollPane stmtPaneScrollPane;
 	
 	// Message area
@@ -920,6 +928,47 @@ public class ConnectionPanel
 		hld.setVisible(true);
     }
 
+    
+    
+    private Map initColorMap()
+    {
+  		SimpleStyle keyword = new SimpleStyle();
+  		keyword.fontColor = new Color(127,0,85);
+  		keyword.bold = true;
+  		
+  		SimpleStyle operator = new SimpleStyle();
+  		operator.fontColor = Color.BLACK;
+  		operator.bold = true;
+  		
+  		SimpleStyle comment = new SimpleStyle();
+  		comment.fontColor = Color.GRAY;
+  		comment.italic = true;
+  		
+  		SimpleStyle plain = new SimpleStyle();
+  		plain.fontColor = Color.BLACK;
+  		
+  		SimpleStyle data = new SimpleStyle();
+  		data.fontColor = Color.BLACK;
+  		
+  		SimpleStyle literal = new SimpleStyle();
+  		literal.fontColor = new Color(0,0,128);
+    	
+    	
+    	Map styleMap = new HashMap();
+  		styleMap.put(Integer.valueOf(SQLLexer.KEYWORD_STYLE), keyword);
+  		styleMap.put(Integer.valueOf(SQLLexer.OPERATOR_STYLE), operator);
+  		styleMap.put(Integer.valueOf(SQLLexer.PLAIN_STYLE), data);
+  		styleMap.put(Integer.valueOf(SQLLexer.DATA_STYLE), data);
+  		styleMap.put(Integer.valueOf(SQLLexer.DEFAULT), data);
+  		styleMap.put(Integer.valueOf(SQLLexer.LITERAL_STYLE), literal);
+  		styleMap.put(Integer.valueOf(SQLLexer.COMMENT_STYLE), comment);
+  		styleMap.put(Integer.valueOf(SQLLexer.MULTILINE_WHOLE), comment);
+  		styleMap.put(Integer.valueOf(SQLLexer.UNCLOSED), comment);
+  		
+  		return styleMap;
+    }
+    
+    
     /**
      * Initialize the GUI interface.
      * */
@@ -938,17 +987,22 @@ public class ConnectionPanel
 		cPane.setLayout(gbLayout);
 	
 		// SQL statement edit area
-		stmtPane = new JTextPane();
+		stmtPane = new JTextArea();
+		stmtPane.setUI(new SyntaxTextUI());
 		
-//TODO		HighlightDocument doc = new HighlightDocument(stmtPane , HighlightDocument.SQL_TYPE);
-		
-//TODO		stmtPane.setDocument(doc);
+		SyntaxDocument doc = new SyntaxDocument(new SQLLexer() , initColorMap() , stmtPane , true);
+		stmtPane.setDocument(doc);
+
+		stmtPane.setFont(new Font("dialoginput" , Font.PLAIN , 12));
 		
 		stmtPane.setDragEnabled(true);
 		stmtPane.addCaretListener(this);
 		stmtPane.addKeyListener(this);
 		stmtPane.getDocument().addUndoableEditListener(sqlUndoMgr);
 		stmtPaneScrollPane = new JScrollPane();
+		
+		stmtPaneScrollPane.setRowHeaderView(new Gutter(stmtPane));
+		
 		stmtPaneScrollPane.setVerticalScrollBarPolicy
 		    (JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		stmtPaneScrollPane.setHorizontalScrollBarPolicy
@@ -1288,8 +1342,10 @@ public class ConnectionPanel
 	void reloadPreferences()
 	{
 		int ts = Preferences.getSQLTabSize();
-//TODO		HighlightDocument doc = (HighlightDocument)stmtPane.getStyledDocument();
-//TODO		doc.setTabs(ts);
+		//HighlightDocument doc = (HighlightDocument)stmtPane.getStyledDocument();
+		//doc.setTabs(ts);
+		
+		stmtPane.setTabSize(ts);
 	}
 
 	/**
