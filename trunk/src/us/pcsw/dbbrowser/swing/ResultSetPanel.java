@@ -28,6 +28,7 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.math.BigDecimal;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -52,7 +53,6 @@ import us.pcsw.dbbrowser.CachingResultSetTableModel;
 import us.pcsw.dbbrowser.Preferences;
 import us.pcsw.dbbrowser.ResultSetTableModel;
 
-import us.pcsw.swing.HorizontalGlue;
 import us.pcsw.swing.HorizontalStrut;
 
 /**
@@ -105,10 +105,15 @@ public class ResultSetPanel extends JPanel
 		
 		JPanel statusPanel = new JPanel();
 		statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
-		statusPanel.add(new HorizontalGlue());
+		infoLabel = new JLabel(" ");
+		infoLabel.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+		Dimension dim = infoLabel.getPreferredSize();
+		dim.width = Integer.MAX_VALUE;
+		infoLabel.setPreferredSize(dim);
+		statusPanel.add(infoLabel);
 		positionXLabel = new JLabel(X_DESC);
 		positionXLabel.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-		Dimension dim = positionXLabel.getPreferredSize();
+		dim = positionXLabel.getPreferredSize();
 		dim.width = 75;
 		positionXLabel.setMaximumSize(dim);
 		positionXLabel.setMinimumSize(dim);
@@ -135,7 +140,7 @@ public class ResultSetPanel extends JPanel
 		
 		// Install listeners
 		listener = new Listener();
-		results.addMouseListener(listener);
+		results.getTableHeader().addMouseListener(listener);
 		results.getSelectionModel().addListSelectionListener(listener);
 		results.getColumnModel().addColumnModelListener(listener);
 	}
@@ -143,6 +148,7 @@ public class ResultSetPanel extends JPanel
 	// MEMBERS
 	
 	// Table for displaying results
+	private JLabel infoLabel;
 	private Listener listener;
 	private JLabel positionXLabel;
 	private JLabel positionYLabel;
@@ -153,6 +159,14 @@ public class ResultSetPanel extends JPanel
 	ResultSetTableModel getResultSetTableModel()
 	{
 		return (ResultSetTableModel)results.getModel();
+	}
+	
+	private void selectColumn(int colIndex)
+	{
+		results.setColumnSelectionInterval(colIndex, colIndex);
+		results.getSelectionModel().setSelectionInterval(
+				0, results.getModel().getRowCount() - 1
+			);
 	}
 	
 	void setResultSetTableModel(ResultSetTableModel model)
@@ -205,6 +219,52 @@ public class ResultSetPanel extends JPanel
 		int y = results.getSelectedColumn() + 1;
 		positionXLabel.setText(X_DESC + (x == 0 ? "" : String.valueOf(x)));
 		positionYLabel.setText(Y_DESC + (y == 0 ? "" : String.valueOf(y)));
+		
+		BigDecimal total = null;
+		if (
+				results.getSelectedColumnCount() == 1 &&
+				results.getSelectedRowCount() > 1
+			)
+		{
+			// If possible, sum the selected cells
+			int c = results.getSelectedColumn();
+			Object o;
+			total = BigDecimal.ZERO;
+			int[] rows = results.getSelectedRows();
+			for (int i = 0; i < rows.length; i++) {
+				o = results.getValueAt(rows[i], c);
+				try {
+					total = total.add(new BigDecimal(o.toString()));
+				} catch (NumberFormatException nfe) {
+					total = null;
+					break;
+				}
+			}
+		} else if (
+				results.getSelectedRowCount() == 1 &&
+				results.getSelectedColumnCount() > 1
+			)
+		{
+			// If possible, sum the selected cells
+			int r = results.getSelectedRow();
+			Object o;
+			total = BigDecimal.ZERO;
+			int[] columns = results.getSelectedColumns();
+			for (int i = 0; i < columns.length; i++) {
+				o = results.getValueAt(r, columns[i]);
+				try {
+					total = total.add(new BigDecimal(o.toString()));
+				} catch (NumberFormatException nfe) {
+					total = null;
+					break;
+				}
+			}
+		}
+		if (total == null) {
+			infoLabel.setText(" ");
+		} else {
+			infoLabel.setText("Sum: " + total.toString());
+		}
 	}
 	
 	private void updateRowCount()
@@ -244,19 +304,36 @@ public class ResultSetPanel extends JPanel
 		
 		public void mouseClicked(MouseEvent e)
 		{
-			if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
-				JTableHeader tableHeader = results.getTableHeader();
-				if (e.getSource() == tableHeader) {
-					// Determine which column header was double-clicked and what
-					// position of it is in the container.
-					int column = tableHeader.columnAtPoint(e.getPoint());
-					Rectangle rect = tableHeader.getHeaderRect(column);
-					// Allow 2 pixels to the left and right of the column's right
-					// boarder for double-click
-					int leftBound = rect.x + rect.width - 5;
-					int rightBound = rect.x + rect.width + 5;
-					if (e.getX() > leftBound && e.getX() < rightBound) {
-						maximizeColumnHeader(tableHeader, column);
+			if (e.getButton() == MouseEvent.BUTTON1) {
+				if (e.getClickCount() == 2) {
+					JTableHeader tableHeader = results.getTableHeader();
+					if (e.getSource() == tableHeader) {
+						// Determine which column header was double-clicked and what
+						// position of it is in the container.
+						int column = tableHeader.columnAtPoint(e.getPoint());
+						Rectangle rect = tableHeader.getHeaderRect(column);
+						// Allow 5 pixels to the left and right of the column's
+						// right boarder for double-click
+						int leftBound = rect.x + rect.width - 5;
+						int rightBound = rect.x + rect.width + 5;
+						if (e.getX() > leftBound && e.getX() < rightBound) {
+							maximizeColumnHeader(tableHeader, column);
+						}
+					}
+				} else if (e.getClickCount() == 1) {
+					JTableHeader tableHeader = results.getTableHeader();
+					if (e.getSource() == tableHeader) {
+						// Determine which column header was clicked and what
+						// position of it is in the container.
+						int column = tableHeader.columnAtPoint(e.getPoint());
+						Rectangle rect = tableHeader.getHeaderRect(column);
+						// Discount 5 pixels to the left and right of the
+						// column's right boarder for double-click
+						int leftBound = rect.x;
+						int rightBound = rect.x + rect.width - 5;
+						if (e.getX() > leftBound && e.getX() < rightBound) {
+							selectColumn(column);
+						}
 					}
 				}
 			}
@@ -264,10 +341,11 @@ public class ResultSetPanel extends JPanel
 		
 		// Table Model Column Listener
 		
-		 public void columnAdded(TableColumnModelEvent e) {}
+		 public void columnAdded(TableColumnModelEvent e){}
 		 public void columnMarginChanged(ChangeEvent e) {}
 		 public void columnMoved(TableColumnModelEvent e) {}
 		 public void columnRemoved(TableColumnModelEvent e) {}
+		 
 		 public void columnSelectionChanged(ListSelectionEvent e)
 		 {
 			 updatePosition();
