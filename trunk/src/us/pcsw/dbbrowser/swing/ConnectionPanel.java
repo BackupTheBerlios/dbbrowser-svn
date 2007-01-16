@@ -316,7 +316,8 @@ public class ConnectionPanel
 	/**
 	 * Manages undo operations for the SQL text pane.
 	 */
-	private UndoManager sqlUndoMgr = new UndoManager();
+	//change jason , this is now provided by default  by SDoc
+	//private UndoManager sqlUndoMgr = new UndoManager();
 	
 	/**
 	 * Listeners to be notified of status change events.
@@ -965,7 +966,7 @@ public class ConnectionPanel
 		stmtPane.setDragEnabled(true);
 		stmtPane.addCaretListener(this);
 		stmtPane.addKeyListener(this);
-		doc.addUndoableEditListener(sqlUndoMgr);
+		//doc.addUndoableEditListener(sqlUndoMgr); now provied by SDoc
 		stmtPaneScrollPane = new JScrollPane(stmtPane);
 		
 		
@@ -1187,6 +1188,8 @@ public class ConnectionPanel
 	{
 		int i = e.getKeyCode();
 		
+		/*
+		 * commented by jason : undo provided by SDoc now
 		switch (i) {
 //		case KeyEvent.VK_F5 :
 //			this.executeStatement();
@@ -1201,7 +1204,7 @@ public class ConnectionPanel
 			{
 			    sqlUndoMgr.undo();
 			}
-		}
+		}*/
 	}
 
 	/**
