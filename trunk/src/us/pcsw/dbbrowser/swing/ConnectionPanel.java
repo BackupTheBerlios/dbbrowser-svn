@@ -21,11 +21,8 @@
  */
 package us.pcsw.dbbrowser.swing;
 
-import syntax.Gutter;
-import syntax.SimpleStyle;
-import syntax.SyntaxDocument;
-import syntax.SyntaxTextUI;
-import syntax.lexers.SQLLexer;
+import sdoc.Gutter;
+import sdoc.SyntaxDocumentFactory;
 import us.pcsw.dbbrowser.ExecutionWorker;
 import us.pcsw.dbbrowser.HistoryListModel;
 import us.pcsw.dbbrowser.Preferences;
@@ -38,6 +35,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Frame;
@@ -46,6 +44,7 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 import java.io.BufferedReader;
@@ -90,9 +89,14 @@ import javax.swing.UIManager;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 
+import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.Document;
+import javax.swing.text.Element;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.TabSet;
@@ -930,45 +934,6 @@ public class ConnectionPanel
 
     
     
-    private Map initColorMap()
-    {
-  		SimpleStyle keyword = new SimpleStyle();
-  		keyword.fontColor = new Color(127,0,85);
-  		keyword.bold = true;
-  		
-  		SimpleStyle operator = new SimpleStyle();
-  		operator.fontColor = Color.BLACK;
-  		operator.bold = true;
-  		
-  		SimpleStyle comment = new SimpleStyle();
-  		comment.fontColor = Color.GRAY;
-  		comment.italic = true;
-  		
-  		SimpleStyle plain = new SimpleStyle();
-  		plain.fontColor = Color.BLACK;
-  		
-  		SimpleStyle data = new SimpleStyle();
-  		data.fontColor = Color.BLACK;
-  		
-  		SimpleStyle literal = new SimpleStyle();
-  		literal.fontColor = new Color(0,0,128);
-    	
-    	
-    	Map styleMap = new HashMap();
-  		styleMap.put(Integer.valueOf(SQLLexer.KEYWORD_STYLE), keyword);
-  		styleMap.put(Integer.valueOf(SQLLexer.OPERATOR_STYLE), operator);
-  		styleMap.put(Integer.valueOf(SQLLexer.PLAIN_STYLE), data);
-  		styleMap.put(Integer.valueOf(SQLLexer.DATA_STYLE), data);
-  		styleMap.put(Integer.valueOf(SQLLexer.DEFAULT), data);
-  		styleMap.put(Integer.valueOf(SQLLexer.LITERAL_STYLE), literal);
-  		styleMap.put(Integer.valueOf(SQLLexer.COMMENT_STYLE), comment);
-  		styleMap.put(Integer.valueOf(SQLLexer.MULTILINE_WHOLE), comment);
-  		styleMap.put(Integer.valueOf(SQLLexer.UNCLOSED), comment);
-  		
-  		return styleMap;
-    }
-    
-    
     /**
      * Initialize the GUI interface.
      * */
@@ -988,9 +953,10 @@ public class ConnectionPanel
 	
 		// SQL statement edit area
 		stmtPane = new JTextArea();
-		stmtPane.setUI(new SyntaxTextUI());
+
+		final SyntaxDocumentFactory fac = SyntaxDocumentFactory.getInstance();
 		
-		SyntaxDocument doc = new SyntaxDocument(new SQLLexer() , initColorMap() , stmtPane , true);
+		Document doc = fac.getDefaultDocument(SyntaxDocumentFactory.SQL_LEXER, stmtPane);
 		stmtPane.setDocument(doc);
 
 		stmtPane.setFont(new Font("dialoginput" , Font.PLAIN , 12));
@@ -999,7 +965,51 @@ public class ConnectionPanel
 		stmtPane.addCaretListener(this);
 		stmtPane.addKeyListener(this);
 		stmtPane.getDocument().addUndoableEditListener(sqlUndoMgr);
-		stmtPaneScrollPane = new JScrollPane();
+		stmtPaneScrollPane = new JScrollPane(stmtPane);
+		
+		
+		stmtPane.addKeyListener(new KeyAdapter()
+		{	
+			boolean isSql = true;
+			
+			public void keyReleased(KeyEvent e)
+			{
+				Document doc = stmtPane.getDocument();
+				Element line = doc.getDefaultRootElement().getElement(0);
+				try
+				{
+					String txt = doc.getText(line.getStartOffset(), line.getEndOffset() -1);
+					int postion = stmtPane.getCaretPosition();
+					
+					if(txt.toLowerCase().indexOf("//bsh") != -1 && isSql)
+					{
+						String data = doc.getText(0, doc.getLength());
+						Document newDoc = fac.getDefaultDocument(SyntaxDocumentFactory.JAVA_LEXER, stmtPane);
+						stmtPane.setDocument(newDoc);
+						newDoc.insertString(0, data, null);
+						stmtPane.setCaretPosition(postion);
+						stmtPane.repaint();
+						stmtPane.revalidate();
+						isSql = false;
+					}
+					else if(txt.toLowerCase().indexOf("//bsh") == -1 && !isSql)
+					{
+						String data = doc.getText(0, doc.getLength());
+						Document newDoc = fac.getDefaultDocument(SyntaxDocumentFactory.SQL_LEXER, stmtPane);
+						stmtPane.setDocument(newDoc);
+						newDoc.insertString(0, data, null);
+						stmtPane.setCaretPosition(postion);
+						stmtPane.repaint();
+						stmtPane.revalidate();
+						isSql = true;
+					}
+				}catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+
+		
 		
 		stmtPaneScrollPane.setRowHeaderView(new Gutter(stmtPane));
 		
@@ -1007,7 +1017,6 @@ public class ConnectionPanel
 		    (JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		stmtPaneScrollPane.setHorizontalScrollBarPolicy
 		    (JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		stmtPaneScrollPane.setViewportView(stmtPane);
 		stmtPaneScrollPane.setPreferredSize(new Dimension(450,150));
 		
 		// Added
