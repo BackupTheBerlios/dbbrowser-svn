@@ -964,7 +964,7 @@ public class ConnectionPanel
 		stmtPane.setDragEnabled(true);
 		stmtPane.addCaretListener(this);
 		stmtPane.addKeyListener(this);
-		stmtPane.getDocument().addUndoableEditListener(sqlUndoMgr);
+		doc.addUndoableEditListener(sqlUndoMgr);
 		stmtPaneScrollPane = new JScrollPane(stmtPane);
 		
 		
