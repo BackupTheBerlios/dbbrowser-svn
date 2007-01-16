@@ -961,6 +961,7 @@ public class ConnectionPanel
 
 		stmtPane.setFont(new Font("dialoginput" , Font.PLAIN , 12));
 		
+		
 		stmtPane.setDragEnabled(true);
 		stmtPane.addCaretListener(this);
 		stmtPane.addKeyListener(this);
