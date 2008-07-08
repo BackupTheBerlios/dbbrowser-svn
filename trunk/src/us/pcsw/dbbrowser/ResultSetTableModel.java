@@ -21,7 +21,6 @@
  */
 package us.pcsw.dbbrowser;
 
-import us.pcsw.util.Debug;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -29,6 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JOptionPane;
+
+import org.slf4j.LoggerFactory;
 
 /**
  * us.pcsw.dbbrowser.ResultSetTableModel
@@ -100,7 +101,7 @@ public abstract class ResultSetTableModel
 		JOptionPane.showMessageDialog(null, exception.getMessage(),
 		                              "Unexpected Error",
 		                              JOptionPane.ERROR_MESSAGE);
-		Debug.log(exception);
+		LoggerFactory.getLogger(getClass()).error("Error occurred", exception);
     }
 
     public int getColumnCount()

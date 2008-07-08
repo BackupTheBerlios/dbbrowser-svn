@@ -24,13 +24,18 @@ package us.pcsw.dbbrowser;
 import bsh.Interpreter;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.logging.LogManager;
 import java.awt.GraphicsEnvironment;
 
 import javax.swing.UIManager;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import us.pcsw.dbbrowser.swing.MainFrame;
-import us.pcsw.util.Debug;
 
 /**
  * us.pcsw.dbbrowser.Main
@@ -57,6 +62,8 @@ import us.pcsw.util.Debug;
 public final class Main
 	extends Object
 {
+	private static final Logger logger = LoggerFactory.getLogger(Main.class);
+	
     public static void main(String args[])
     {
 		try {
@@ -85,10 +92,10 @@ public final class Main
 							if ((i + 1) < args.length) {
 								try {
 								    logFile = new File(args[++i]);
-								    Debug.setLogFile(logFile);
+								    InputStream is = new FileInputStream(logFile);
+								    LogManager.getLogManager().readConfiguration(is);
 								} catch (IOException exc) {
-								    System.err.println("Unable to open " + args[i] + "for output.  Debugging will be written to standard error output.");
-								    Debug.logToStdErr();
+								    System.err.println("Unable to open " + args[i] + "for configuring logger.  Default debugging configuration will be used.");
 								}
 							} else {
 								usageErr();
@@ -120,7 +127,7 @@ public final class Main
 
 			// Initialize preferences
 			if (! Preferences.initialize()) {
-				Debug.log("There was an error parsing the preferences file.  Defaults will be used.", 10);
+				logger.warn("There was an error parsing the preferences file.  Defaults will be used.");
 			}
 	    	
 	    	try {
@@ -130,12 +137,12 @@ public final class Main
 	    		else
 	    			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 	    	} catch (Throwable t) {
-	    		Debug.log(t);
+	    		logger.warn("Unable to load the default system look and feel.", t);
 	    		try {
 	    			// Use the system default
 					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 	    		} catch (Throwable t2) {
-	    			Debug.log(t2);
+		    		logger.warn("Unable to load the default system look and feel.", t2);
 	    		}
 	    	}
 
@@ -150,9 +157,7 @@ public final class Main
 			// command-line switches.
 			usageErr();
 		} catch (Exception e) {
-		    System.err.println("There was an unexpected error starting the DB Browser application.\n");
-		    System.err.println(e.getMessage());
-	    	Debug.log(e);
+		    logger.error("There was an unexpected error starting the DB Browser application.", e);
 		}
     }
 

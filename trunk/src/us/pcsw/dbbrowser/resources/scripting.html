@@ -219,6 +219,130 @@
 	con.close();
 			</pre>
 		</p>
+		<p>
+			Below is another example script that is fairly complex.
+			It was used to change ownership of database objects to
+			the group app_admins.  Many objects had mistakenly been
+			created by users without being given ownership to
+			app_admins.  As a result, only the creator could alter
+			or drop objects.  This script was used to fix that
+			problem.  This script is PostgreSQL specific.
+			<pre>
+	//bsh
+
+	// The purpose of this script locate all the tables, indexes, views, sequences,
+	// and functions that belong to the current user and to reassign their
+	// ownership to the group app_admins;
+
+	// Prepare
+	con1 = _dbbConnectionProvider.getConnection();
+	con2 = _dbbConnectionProvider.getConnection();
+	stmt1 = con1.createStatement();
+	stmt2 = con2.createStatement();
+
+	// Tables, Indexes, Views, and Sequences
+
+	StringBuilder sql;
+	String type, name;
+	qry1 = stmt1.executeQuery(
+		"SELECT " +
+		" pg_namespace.nspname as schemaname, " +
+		" pg_class.relname as objectname, pg_class.relkind " +
+		"FROM pg_class " +
+		" JOIN pg_authid ON pg_authid.oid = pg_class.relowner " +
+		" JOIN pg_namespace ON pg_namespace.oid = relnamespace " +
+		"WHERE " +
+		" pg_authid.rolname = current_user AND " +
+		" pg_namespace.nspname IN ( " +
+		"  'billing', 'client', 'import', 'public', 'inventory', 'unify' " +
+		" ) AND pg_class.relkind in ( 'r', 'i', 'S', 'v' );"
+	);
+	while (qry1.next()) {
+		name = qry1.getString(1) + '.' + qry1.getString(2);
+		sql = new StringBuilder("ALTER ");
+		switch (qry1.getString(3).charAt(0)) {
+			case 'i': sql.append("INDEX "); break;
+			case 'r': type = "table"; sql.append("TABLE "); break;
+			case 'S': type = "sequence"; sql.append("TABLE "); break;
+			case 'v': type = "view"; sql.append("TABLE "); break;
+		}
+		sql.append(name);
+		sql.append(" OWNER TO app_admins;");
+		stmt2.executeUpdate(sql.toString());
+		print("Ownership of " + type + ' ' + name + " changed.");
+	}
+	qry1.close();
+	stmt2.close();
+
+	// Functions
+
+	con3 = _dbbConnectionProvider.getConnection();
+	stmt3 = con3.createStatement();
+	stmt2 = con2.prepareStatement("select typname from pg_type where oid = ? ;");
+
+	long oid;
+
+	qry1 = stmt1.executeQuery(
+		"select " +
+		" pg_namespace.nspname, pg_proc.proname, array_to_string(pg_proc.proargtypes,
+		'|') " +
+		"from " +
+		" pg_proc " +
+		" join pg_authid on pg_authid.oid = pg_proc.proowner " +
+		" join pg_namespace on pg_namespace.oid = pg_proc.pronamespace " +
+		"where " +
+		" pg_authid.rolname = current_user AND " +
+		" pg_namespace.nspname IN ( " +
+		"  'billing', 'client', 'import', 'public', 'inventory', 'unify' " +
+		" ) " +
+		"order by pg_proc.proname, pg_proc.oid;"
+	);
+	boolean first;
+	String[] types;
+	while (qry1.next()) {
+		sql = new StringBuilder(qry1.getString(1)).append('.')
+			.append(qry1.getString(2)).append('(');
+		name = qry1.getString(3);
+		if (name.length() == 0) {
+			types = new String[0];
+		} else {
+			types = name.split("\\|");
+		}
+		first = true;
+		for (int i = 0; i < types.length; i++) {
+			if (first) {
+				first = false;
+			} else {
+				sql.append(", ");
+			}
+			stmt2.setLong(1, Long.valueOf(types[i]));
+			qry2 = stmt2.executeQuery();
+			while (qry2.next()) {
+				sql.append(qry2.getString(1));
+			}
+			qry2.close();
+		}
+		sql.append(')');
+		name = sql.toString();
+		sql = new StringBuilder("ALTER FUNCTION ");
+		sql.append(name);
+		sql.append(" OWNER TO app_admins;");
+		stmt3.executeUpdate(sql.toString());
+		print("Ownership of function " + name + " changed.");
+	}
+	qry1.close();
+
+	// Clean Up
+	stmt1.close();
+	stmt2.close();
+	stmt3.close();
+	con1.close();
+	con2.close();
+	con3.close();
+
+	print("Done.");
+			</pre>
+		</p>
 		<p><a href="#top">Back to the Top</a></p>
 		<a href="http://dbbrowser.berlios.de">Go to the DBBrowser Website</a>
 	</body>

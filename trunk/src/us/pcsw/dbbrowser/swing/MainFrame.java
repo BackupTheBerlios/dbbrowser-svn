@@ -48,11 +48,14 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import us.pcsw.dbbrowser.Preferences;
 import us.pcsw.dbbrowser.cp.ConnectionProvider;
 import us.pcsw.dbbrowser.event.StatusEvent;
 import us.pcsw.dbbrowser.event.StatusTypeEnum;
-import us.pcsw.util.Debug;
 import us.pcsw.swing.HTMLDialog;
 import us.pcsw.swing.LookAndFeelMenu;
 import us.pcsw.swing.SystemInfoDialog;
@@ -139,6 +142,7 @@ public class MainFrame
     		    javax.swing.event.ChangeListener,
 			    us.pcsw.dbbrowser.event.StatusListener
 {
+	private static final Logger logger = LoggerFactory.getLogger(MainFrame.class);
 	private static final long serialVersionUID = 1L;
 	
 	private static String MAX_NINE_CONNECTIONS_WARNING = "<html><b>Currently, a maximum of only 9 connections are supported.<b><br><font size=\"-1\">Closing some open connections and try again.</font></html>";
@@ -467,14 +471,11 @@ public class MainFrame
 				Preferences.setLookAndFeelName(UIManager.getLookAndFeel().getName());
 				Preferences.save();
 		    } catch (Throwable t) {
-		    	Debug.log(t);
+		    	logger.error("Error saving app prefs", t);
 		    	JOptionPane.showMessageDialog
 		    		(this, "There was an error saving application preferences.",
                      "Error Saving Preferences", JOptionPane.ERROR_MESSAGE);
 		    }
-		    	
-		    // Close the debug file if open.
-		    Debug.closeLogFile();
 	
 		    // Dispose of the frame.
 		    dispose();
@@ -499,7 +500,7 @@ public class MainFrame
 		JOptionPane.showMessageDialog(this, exception.getMessage(),
 					      "Unexpected Error",
 					      JOptionPane.ERROR_MESSAGE);
-		Debug.log(exception);
+		logger.error("Error occurred", exception);
     }
 
     /**
@@ -1075,7 +1076,6 @@ public class MainFrame
     	try {
 		   	Preferences.save();
     	} catch (Exception ioe) {
-			Debug.log(ioe);
     		handleException(new Exception("Unable to save application perferences."));	
     	}
     }

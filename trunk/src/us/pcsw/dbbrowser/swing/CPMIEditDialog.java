@@ -37,8 +37,10 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+
+import org.slf4j.LoggerFactory;
+
 import us.pcsw.dbbrowser.ConnectionProviderModelItem;
-import us.pcsw.util.Debug;
 
 /**
  * CPMIEditDialog
@@ -154,7 +156,7 @@ final class CPMIEditDialog extends JDialog
 					setVisible(false);
 				}
 			} catch (IllegalArgumentException iae) {
-				Debug.log(iae);
+				LoggerFactory.getLogger(getClass()).error("Unable to load connection provider.", iae);
 				JOptionPane.showMessageDialog
 					(this, iae.getMessage(),
 					 "Cannot Load Connection Provider",

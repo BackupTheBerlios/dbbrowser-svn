@@ -95,6 +95,31 @@ public final class ConnectionProvider
     }
 
 	/**
+	 * @see us.pcsw.dbbrowser.cp.ConnectionProvider#getDataTypes()
+	 */
+	public DataType[] getDataTypes()
+		throws ClassNotFoundException, IllegalAccessException,
+			InstantiationException, SQLException
+	{
+		DataType[] types = super.getDataTypes();
+		
+		// MySQL's driver lists all the numeric types as serial though
+		// can be used to store an auto-increment value, they are not
+		// necessarily used so.
+		// Affected types:
+		//		TINYINT, BIGINT, NUMERIC, DECIMAL, INTEGER, INT, MEDIUMINT
+		//		SMALLINT, DOUBLE, FLOAT, DOUBLE, DOUBLE PRECISION, REAL
+		//
+		for (int i = 0; i < types.length; i++) {
+			if (types[i].isAutoIncrement()) {
+				types[i].setAutoIncrement(false);
+			}
+		}
+		
+		return types;
+	}
+
+	/**
 	 * Builds and returns the vector of needed connection parameters.
 	 */
 	protected Vector getNewConnectionParameters()

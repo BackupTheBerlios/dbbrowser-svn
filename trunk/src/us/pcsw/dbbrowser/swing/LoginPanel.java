@@ -54,6 +54,10 @@ import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.JTextComponent;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import us.pcsw.dbbrowser.ConnectionProviderModel;
 import us.pcsw.dbbrowser.Preferences;
 import us.pcsw.dbbrowser.cp.BooleanConnectionParameter;
@@ -64,7 +68,6 @@ import us.pcsw.dbbrowser.cp.PicklistConnectionParameter;
 import us.pcsw.dbbrowser.cp.StringConnectionParameter;
 import us.pcsw.swing.BasicFileFilter;
 import us.pcsw.swing.RegExpFormatter;
-import us.pcsw.util.Debug;
 
 /**
  *  us.pcsw.dbbrowser.LoginPanel
@@ -114,6 +117,7 @@ final class LoginPanel
 	extends JPanel
 	implements ActionListener, ListSelectionListener
 {
+	private static final Logger logger = LoggerFactory.getLogger(LoginPanel.class);
 	private static final long serialVersionUID = 1L;
 
 	public static int ACTION_EVENT_CANCEL = 0;
@@ -267,7 +271,7 @@ final class LoginPanel
 		JOptionPane.showMessageDialog(this, exception.getMessage(),
 						  "Unexpected Error",
 						  JOptionPane.ERROR_MESSAGE);
-		Debug.log(exception);
+		logger.error("unexpected error", exception);
 	}
 
 	/**
@@ -316,7 +320,7 @@ final class LoginPanel
 					s = "Unable to load the Connection Provider class " + s;
 					JOptionPane.showMessageDialog(null, s, "Class Not Found",
 					                              JOptionPane.ERROR_MESSAGE);
-					Debug.log(exc, 10);
+					logger.error("Error loading connection provider", exc);
 					return;
 				}
 

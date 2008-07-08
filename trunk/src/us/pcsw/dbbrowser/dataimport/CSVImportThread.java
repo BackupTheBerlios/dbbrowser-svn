@@ -42,17 +42,13 @@ import com.Ostermiller.util.CSVParser;
 import us.pcsw.dbbrowser.cp.ConnectionProvider;
 
 /**
- * us.pcsw.dbbrowser.dataimport.CSVImportThread
- * -
  * A class that imports data from a CSV file into the database.
  * 
- * <b>NOTE:</b> Most of this functionallity needs to be refactored into
- * either a base class or a helper class because most of this functionallity
+ * <b>NOTE:</b> Most of this functionality needs to be re-factored into
+ * either a base class or a helper class because most of this functionality
  * would be necessary for any type of data import and is not CSV specific.
  *
- * <P><B>Revision History:</B><UL>
- * <LI>Mar 10, 2005 This class was created by pchapman.</LI>
- * </UL></P>
+ * @author pchapman
  */
 public class CSVImportThread extends Thread
 {

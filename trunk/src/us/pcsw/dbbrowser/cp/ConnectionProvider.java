@@ -39,6 +39,8 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr; 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -49,7 +51,6 @@ import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
 import us.pcsw.dbbrowser.Preferences;
-import us.pcsw.util.Debug;
 
 /**
  * us.pcsw.dbbrowser.ConnectionProvider
@@ -126,7 +127,7 @@ public abstract class ConnectionProvider
 		try {
 			newCP = (ConnectionProvider)this.getClass().newInstance();
 		} catch (Throwable t) {
-			Debug.log(t, 10);
+			LoggerFactory.getLogger(getClass()).error("Error cloning the connection provider.", t);
 			return null;
 		}
 		// Copy the parameters for the connection.

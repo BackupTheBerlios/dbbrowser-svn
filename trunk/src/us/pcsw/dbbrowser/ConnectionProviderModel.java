@@ -27,7 +27,9 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import us.pcsw.util.Debug;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * us.pcsw.dbbrowser.ConnectionProviderModel
@@ -48,6 +50,8 @@ import us.pcsw.util.Debug;
 public final class ConnectionProviderModel
     implements javax.swing.ComboBoxModel, javax.swing.table.TableModel
 {
+	private static final Logger logger = LoggerFactory.getLogger(ConnectionProviderModel.class);
+	
     /**
      * The index of the selected item.
      */
@@ -162,13 +166,7 @@ public final class ConnectionProviderModel
 
     public Class getColumnClass(int index)
     {
-        try {
-            return Class.forName("java.lang.String");
-        } catch (ClassNotFoundException cnfe) {
-            // If it gets here, the JRE is in a world of hurt.
-            Debug.log(cnfe, 1);
-            return null;
-        }
+    	return String.class;
     }
 
     public int getColumnCount()
@@ -199,12 +197,12 @@ public final class ConnectionProviderModel
     {
         for (int index = 0; index < cpList.size(); index++) {
             if (cpList.elementAt(index).equals(dbName)) {
-                Debug.log("Connection Provider " + dbName + " found.");
+            	logger.debug("Connection Provider {} found.", dbName);
                 return ((ConnectionProviderModelItem)cpList.elementAt(index))
                     .getClassName();
             }
         }
-        Debug.log("Connection Provider " + dbName + " not found.");
+    	logger.debug("Connection Provider {} not found.", dbName);
         return null;
     }
 

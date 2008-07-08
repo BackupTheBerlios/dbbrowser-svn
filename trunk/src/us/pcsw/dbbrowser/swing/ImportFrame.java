@@ -73,6 +73,9 @@ import javax.swing.event.ListSelectionListener;
 
 import javax.swing.table.AbstractTableModel;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import us.pcsw.dbbrowser.ColumnTreeNode;
 import us.pcsw.dbbrowser.TableTreeNode;
 
@@ -90,7 +93,6 @@ import us.pcsw.swing.HorizontalGlue;
 import us.pcsw.swing.HorizontalStrut;
 import us.pcsw.swing.WrappedOptionPane;
 
-import us.pcsw.util.Debug;
 import us.pcsw.util.ExtVector;
 import us.pcsw.util.Message;
 
@@ -106,7 +108,8 @@ import us.pcsw.util.Message;
 public class ImportFrame extends JFrame
 {
 	// CONSTANTS
-	
+
+	private static final Logger logger = LoggerFactory.getLogger(ImportFrame.class);
 	private static final long serialVersionUID = 1L;
 	
 	private static final String[][] tabLabels = {
@@ -636,7 +639,7 @@ public class ImportFrame extends JFrame
 			}
 			return new DefaultComboBoxModel(ev.toArray());
 		} catch (Exception e) {
-			Debug.log(e);
+			logger.error("Error getting list of tables", e);
 			WrappedOptionPane.showWrappedMessageDialog(
 					this,
 					"There was an error obtaining a list of tables.",
@@ -674,7 +677,7 @@ public class ImportFrame extends JFrame
 			v.toArray(items);
 			return new DefaultComboBoxModel(items);
 		} catch (Exception e) {
-			Debug.log(e);
+			logger.error("Error getting list of tables", e);
 			WrappedOptionPane.showWrappedMessageDialog(
 					this,
 					"There was an error obtaining a list of tables.",

@@ -2,6 +2,9 @@ package us.pcsw.util;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * A simple, static class to display a URL in the system browser.
  * 
@@ -23,6 +26,7 @@ import java.io.IOException;
 public class BrowserLauncher
 {
 	// CONSTANTS
+	private static final Logger logger = LoggerFactory.getLogger(BrowserLauncher.class);
 	
 	// Used to identify the windows platform.
 	private static final String WIN_ID = "Windows";
@@ -96,8 +100,7 @@ public class BrowserLauncher
 					Runtime.getRuntime().exec(cmd);
 					return;
 				} catch (Throwable t) {
-					// The call failed.
-					Debug.log(t);
+					logger.error("Error opening browser with command '{}'", cmd, t);
 				}
 			}
 			if (windows) {
@@ -111,7 +114,7 @@ public class BrowserLauncher
 				// worked, otherwise we need to start the browser.
 				// cmd = 'netscape -remote openURL(http://www.javaworld.com)'
 				try {
-					Debug.log("Trying with mozilla", Debug.INFO);
+					logger.info("Trying with mozilla");
 					cmd = UNIX_PATH_NEXT + " " + UNIX_FLAG + "(" + url + ")";
 					Process p = Runtime.getRuntime().exec(cmd);
 					try {
@@ -125,13 +128,10 @@ public class BrowserLauncher
 							p = Runtime.getRuntime().exec(cmd);
 						}
 					} catch (InterruptedException x2) {
-						Debug.log(
-								"BrowserLauncher.displayURL(String) : Error bringing up browser, cmd='"
-										+ cmd + "'", Debug.ERR);
-						Debug.log(x2);
+						logger.error("BrowserLauncher.displayURL(String) : Error bringing up browser, cmd='{}'", cmd, x2);
 					}
 				} catch (IOException x1) {
-					Debug.log("Trying netscape", Debug.INFO);
+					logger.info("Trying netscape");
 					cmd = UNIX_PATH + " " + UNIX_FLAG + "(" + url + ")";
 					Process p = Runtime.getRuntime().exec(cmd);
 					try {
@@ -145,31 +145,20 @@ public class BrowserLauncher
 							p = Runtime.getRuntime().exec(cmd);
 						}
 					} catch (InterruptedException x) {
-						Debug.log(
-								"BrowserLauncher.displayURL(String) : Error bringing up browser, cmd='"
-										+ cmd + "'", Debug.ERR);
-						Debug.log(x);
+						logger.error("BrowserLauncher.displayURL(String) : Error bringing up browser, cmd='{}'", cmd, x);
 					}
 				}
 			} else if (System.getProperty("os.name").equals("Mac OS X"))//FOR
 																		// MACINTOSH
 			{
 				try {
-					Debug
-							.log(
-									"BrowserLauncher.displayURL(String) : Invoking Browser for MAC OS. Inside BrowserLauncher.java",
-									Debug.INFO);
+					logger.info("BrowserLauncher.displayURL(String) : Invoking Browser for MAC OS. Inside BrowserLauncher.java");
 					String macurl = getMacURL(url);
 					cmd = MAC_PATH + " " + macurl;
-					Debug.log(
-							"BrowserLauncher.displayURL(String) : cmd to be exceuted: "
-									+ cmd, Debug.INFO);
+					logger.info("BrowserLauncher.displayURL(String) : cmd to be exceuted: '{}'", cmd);
 					Runtime.getRuntime().exec(cmd);
 				} catch (IOException x1) {
-					Debug
-							.log(
-									"BrowserLauncher.displayURL(String) : Trying with mozilla",
-									Debug.INFO);
+					logger.info("BrowserLauncher.displayURL(String) : Trying with mozilla");
 					cmd = UNIX_PATH_NEXT + " " + UNIX_FLAG + "(" + url + ")";
 					Process p = Runtime.getRuntime().exec(cmd);
 					try {
@@ -183,19 +172,13 @@ public class BrowserLauncher
 							p = Runtime.getRuntime().exec(cmd);
 						}
 					} catch (InterruptedException x2) {
-						Debug.log(
-								"BrowserLauncher.displayURL(String) : Error bringing up browser, cmd='"
-										+ cmd + "'", Debug.ERR);
-						Debug.log(x2);
+						logger.error("BrowserLauncher.displayURL(String) : Error bringing up browser, cmd='{}'", cmd, x2);
 					}
 				}
 			}
 		} catch (IOException x) {
 			// couldn't exec browser
-			Debug.log(
-					"BrowserLauncher.displayURL(String) : Could not invoke browser, command="
-							+ cmd, Debug.ERR);
-			Debug.log(x);
+			logger.error("BrowserLauncher.displayURL(String) : Could not invoke browser, command='{}'", cmd,x);
 		}
 	}
 

@@ -31,13 +31,10 @@ import us.pcsw.dbbrowser.SQLExecutionResults;
 import us.pcsw.dbbrowser.SQLExecutionWorker;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Frame;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
@@ -59,11 +56,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.Vector;
@@ -89,20 +84,13 @@ import javax.swing.UIManager;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.TabSet;
-import javax.swing.text.TabStop;
 
-import javax.swing.undo.UndoManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bsh.EvalError;
 import bsh.TargetError;
@@ -115,8 +103,6 @@ import us.pcsw.dbbrowser.event.ElapsedTimeEventTimer;
 import us.pcsw.dbbrowser.event.StatusEvent;
 import us.pcsw.dbbrowser.event.StatusListener;
 import us.pcsw.dbbrowser.event.StatusTypeEnum;
-
-import us.pcsw.util.Debug;
 
 import us.pcsw.util.tablemodelexport.TableModelExport;
 
@@ -255,14 +241,8 @@ public class ConnectionPanel
 	            javax.swing.event.CaretListener,
 	            us.pcsw.dbbrowser.event.StatusListener
 {
+	private static final Logger logger = LoggerFactory.getLogger(ConnectionPanel.class);
 	private static final long serialVersionUID = 1L;
-	
-	/**
-	 * Constant used by reloadPreferences to help determine the average
-	 * character width for the statement pane's default font.
-	 */
-	private static final String ALPHANUMERIC =
-		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 	
 	private static final String RESULTS_TAB_PREFIX = "Results ";
 	
@@ -382,7 +362,7 @@ public class ConnectionPanel
 			           ("us/pcsw/dbbrowser/resources/images/msg_inform.png"));
 		} catch (Throwable t) {
 			// Unable to load the icons, but that is not catastrophic.
-			Debug.log(t);
+			logger.error("Error loading resources", t);
 		}
 		
 		initGUI();
@@ -581,7 +561,7 @@ public class ConnectionPanel
 	 */
 	private void displayDBConnectError(Throwable t)
 	{
-		Debug.log(t);
+		logger.info("Database connection error", t);
 		StringBuffer sb = new StringBuffer("Database Connection Error\n\n");
 		sb.append(t.getMessage());
 		setMessage(sb.toString(), true);
@@ -604,7 +584,7 @@ public class ConnectionPanel
 		cancelButton.setEnabled(! (worker instanceof SQLExecutionWorker));
 		executeButton.setEnabled(b && timer == null);
 		clearButton.setEnabled(b);
-		testButton.setEnabled(Debug.on() && b);
+		testButton.setEnabled(logger.isDebugEnabled() && b);
 
 		notifyStatusListeners(new StatusEvent(this, ste));
 	}
@@ -647,7 +627,7 @@ public class ConnectionPanel
 		} catch (java.lang.Throwable e) {
 			UIManager.getLookAndFeel().provideErrorFeedback(msgArea);
 			setMessage("ERROR: " + e.getMessage(), true);
-		    Debug.log(e);
+			logger.info("Error executing script", e);
 		}
 		stmtPane.requestFocus();
 	}
@@ -848,7 +828,7 @@ public class ConnectionPanel
 		JOptionPane.showMessageDialog(this, exception.getMessage(),
 					      "Unexpected Error",
 					      JOptionPane.ERROR_MESSAGE);
-		Debug.log(exception);
+		logger.error("Error occurred", exception);
     }
 
 	/**
@@ -1090,7 +1070,7 @@ public class ConnectionPanel
 		testButton = new JButton("Test");
 		testButton.setEnabled(false);
 		testButton.setMnemonic('T');
-		testButton.setVisible(Debug.on());
+		testButton.setVisible(logger.isDebugEnabled());
 		testButton.setAlignmentX(CENTER_ALIGNMENT);
 		testButton.addActionListener(this);
 		testButton.addKeyListener(this);
@@ -1184,28 +1164,7 @@ public class ConnectionPanel
 	 * statement.
 	 * @see java.awt.event.KeyListener#keyPressed(KeyEvent)
 	 */
-	public void keyPressed(KeyEvent e)
-	{
-		int i = e.getKeyCode();
-		
-		/*
-		 * commented by jason : undo provided by SDoc now
-		switch (i) {
-//		case KeyEvent.VK_F5 :
-//			this.executeStatement();
-//			break;
-		case KeyEvent.VK_Z :
-			// There is no definition for UNDO in the metal look and feel.
-			// Therefore, this code will cause the key sequence Ctrl+Z to
-			// perform an undo operation on the stmtPane under all look and
-			// feels.
-			if (e.getModifiersEx() == KeyEvent.CTRL_DOWN_MASK &&
-			    stmtPane.hasFocus())
-			{
-			    sqlUndoMgr.undo();
-			}
-		}*/
-	}
+	public void keyPressed(KeyEvent e) {}
 
 	/**
 	 * Responds to key released events fired by the frame.
@@ -1281,7 +1240,7 @@ public class ConnectionPanel
 				executeButton.setEnabled(b);
 				cancelButton.setEnabled(! (worker instanceof SQLExecutionWorker));
 				clearButton.setEnabled(b);
-				testButton.setEnabled(Debug.on() && b);
+				testButton.setEnabled(logger.isDebugEnabled() && b);
 	
 				notifyStatusListeners
 					(new StatusEvent(this, StatusTypeEnum.NOT_BUSY));
@@ -1635,7 +1594,7 @@ public class ConnectionPanel
 		UIManager.getLookAndFeel().
 			provideErrorFeedback(msgArea);
 		setMessage(createErrorOutput(t), true);
-		Debug.log(t.getMessage());
+		logger.info("Error executing SQL", t);
 	}
 	
 	private String createErrorOutput(Throwable t)
@@ -1761,7 +1720,7 @@ public class ConnectionPanel
 	    		} catch (Throwable t) {
 					UIManager.getLookAndFeel().provideErrorFeedback(msgArea);
 					setMessage("ERROR: " + t.getMessage(), true);
-					Debug.log(t);
+					logger.info("Error executing query", t);
 					notifyStatusListeners(new StatusEvent(this, StatusTypeEnum.QUERY_ENDED));
 					notifyStatusListeners
 						(new StatusEvent(this, StatusTypeEnum.NOT_BUSY));

@@ -148,6 +148,10 @@ public final class DataType
 	{
 		return autoInc;
 	}
+	public void setAutoIncrement(boolean autoInc)
+	{
+		this.autoInc = autoInc;
+	}
 
 	/*
 	 * CASE_SENSITIVE boolean=> is it case sensitive.

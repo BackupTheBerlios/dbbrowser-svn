@@ -49,6 +49,10 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.TreeModel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import us.pcsw.dbbrowser.DBObjectsTreeNode;
 import us.pcsw.dbbrowser.DBObjectsTreeModel;
 import us.pcsw.dbbrowser.Preferences;
@@ -59,7 +63,6 @@ import us.pcsw.dbbrowser.cp.ConnectionProvider;
 import us.pcsw.dbbrowser.event.StatusEvent;
 import us.pcsw.dbbrowser.event.StatusListener;
 import us.pcsw.dbbrowser.event.StatusTypeEnum;
-import us.pcsw.util.Debug;
 
 /**
  * us.pcsw.dbbrowser.swing.DBViewDialog
@@ -86,6 +89,7 @@ public final class DBViewDialog
 	extends JFrame
 	implements ActionListener, MouseListener, StatusListener
 {
+	private static final Logger logger = LoggerFactory.getLogger(DBViewDialog.class);
 	private static final long serialVersionUID = 1L;
 
 	private int busyStatusCount = 0;
@@ -266,7 +270,7 @@ public final class DBViewDialog
 		JOptionPane.showMessageDialog(this, exception.getMessage(),
 		                              "Unexpected Error",
 		                              JOptionPane.ERROR_MESSAGE);
-		Debug.log(exception);
+		logger.error("Error occured", exception);
     }
 
 	/**
@@ -444,7 +448,7 @@ public final class DBViewDialog
 			busyStatusCount--;
 			if (busyStatusCount < 0) {
 				// This should never happen.
-				Debug.log("ASSERT:  DBViewDialog:  busyStatusCount >= 0 IS FALSE", 10);
+				logger.debug("ASSERT:  DBViewDialog:  busyStatusCount >= 0 IS FALSE");
 				busyStatusCount = 0;
 			}
 		} else if (se.getType() == StatusTypeEnum.ERROR) {

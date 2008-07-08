@@ -53,12 +53,14 @@ import javax.swing.JTabbedPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
+
+import org.slf4j.LoggerFactory;
+
 import us.pcsw.dbbrowser.ConnectionProviderModel;
 import us.pcsw.dbbrowser.ConnectionProviderModelItem;
 import us.pcsw.dbbrowser.Preferences;
 import us.pcsw.swing.FontChooser;
 import us.pcsw.swing.RegExpFormatter;
-import us.pcsw.util.Debug;
 
 /**
  * us.pcsw.dbbrowser.swing.OptionsDialog
@@ -260,7 +262,7 @@ public final class OptionsDialog
 		JOptionPane.showMessageDialog(this, exception.getMessage(),
 						  "Unexpected Error",
 						  JOptionPane.ERROR_MESSAGE);
-		Debug.log(exception);
+		LoggerFactory.getLogger(getClass()).error("Error occurred", exception);
 	}
     
     private JPanel initTabConnection()
