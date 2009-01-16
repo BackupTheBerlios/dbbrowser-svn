@@ -88,6 +88,11 @@ public final class ConnectionProvider
 		connect.append(getConnectionParameter("Port").getValue().toString());
 		connect.append('/');
 		connect.append(getConnectionParameter("Database").getValue());
+		Object o = getConnectionParameter("Parameters").getValue();
+		if (o != null && o.toString().length() > 0) {
+			connect.append('?');
+			connect.append(o);
+		}
 		// Connect
 		String login = getConnectionParameter("Login").getValue().toString();
 		String pass = getConnectionParameter("Password").getValue().toString();
@@ -125,7 +130,7 @@ public final class ConnectionProvider
 	protected Vector getNewConnectionParameters()
 	{
 		ConnectionParameter cp = null;
-		Vector cpAry = new Vector(4,1);
+		Vector cpAry = new Vector(5,1);
 		cp = new StringConnectionParameter("Server", true, null);
 		cpAry.add(0, cp);
 		cp = new StringConnectionParameter("Database", true, null);
@@ -139,6 +144,8 @@ public final class ConnectionProvider
 											new Integer(3306), 0,
 											Integer.MAX_VALUE);
 		cpAry.add(4, cp);
+		cp = new StringConnectionParameter("Parameters", false, null);
+		cpAry.add(5, cp);
 		return cpAry;
 	}
 
